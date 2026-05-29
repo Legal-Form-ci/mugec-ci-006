@@ -79,7 +79,9 @@ export const createAdminUser = createServerFn({ method: "POST" })
   .inputValidator((input) => createSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.userId);
-    const password = data.password || defaultPwd(data.portal);
+    const password = data.password || generateStrongPassword();
+    const isGenerated = !data.password;
+
 
     // valider le rôle demandé
     let roleToInsert: string;
@@ -167,8 +169,13 @@ export const createAdminUser = createServerFn({ method: "POST" })
       }
     } catch { /* logged via invitations row */ }
 
-    return { ok: true, user_id: userId, password };
+    // Le mot de passe n'est jamais renvoyé dans la réponse (évite les fuites
+    // via logs / DevTools). Il est envoyé à l'utilisateur via email/WhatsApp.
+    // Si aucun canal n'est configuré, le super-admin doit utiliser le flux
+    // "réinitialiser le mot de passe" pour générer un nouveau code.
+    return { ok: true, user_id: userId, password_delivered: isGenerated ? data.send_via : "manual" };
   });
+
 
 export const updateAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -194,6 +201,11 @@ export const updateAdminUser = createServerFn({ method: "POST" })
       const newPwd = "@Reset" + Math.floor(Math.random() * 9000 + 1000);
       const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: newPwd });
       if (error) throw new Error(error.message);
+    if (data.reset_password) {
+      const newPwd = generateStrongPassword();
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: newPwd });
+      if (error) throw new Error(error.message);
+      // Renvoyé une seule fois au super-admin pour transmission hors-bande.
       return { ok: true, password: newPwd };
     }
     return { ok: true };
