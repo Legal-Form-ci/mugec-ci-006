@@ -39,9 +39,22 @@ type Doc = {
 
 function Page() {
   const { user } = useAuth();
+  const [memberId, setMemberId] = useState<string | null>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [busy, setBusy] = useState(true);
   const [q, setQ] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [docType, setDocType] = useState("justificatif");
+  const upload = useResumableUpload("documents");
+
+  async function reload(mid: string) {
+    const { data } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("member_id", mid)
+      .order("created_at", { ascending: false });
+    setDocs((data as Doc[]) ?? []);
+  }
 
   useEffect(() => {
     (async () => {
@@ -56,15 +69,40 @@ function Page() {
         setBusy(false);
         return;
       }
-      const { data } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("member_id", member.id)
-        .order("created_at", { ascending: false });
-      setDocs((data as Doc[]) ?? []);
+      setMemberId(member.id);
+      await reload(member.id);
       setBusy(false);
     })();
   }, [user]);
+
+  async function handleFile(file: File) {
+    if (!memberId || !user) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux (max 10 Mo)");
+      return;
+    }
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const res = await upload.upload(file, path);
+    if (!res) return; // error state already set
+    const { error } = await supabase.from("documents").insert({
+      member_id: memberId,
+      uploaded_by: user.id,
+      type: docType,
+      title: file.name,
+      file_name: file.name,
+      url: res.url ?? "",
+      mime_type: file.type,
+    });
+    if (error) {
+      toast.error("Upload OK mais enregistrement échoué : " + error.message);
+      return;
+    }
+    toast.success("Document ajouté");
+    upload.reset();
+    if (fileRef.current) fileRef.current.value = "";
+    await reload(memberId);
+  }
 
   const filtered = useMemo(() => {
     if (!q) return docs;
