@@ -68,10 +68,19 @@ function escapeHtml(s: string) {
 }
 
 async function sendEmail(to: string, subject: string, body: string) {
-  const url = process.env.EMAIL_API_URL;
-  const key = process.env.EMAIL_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "no-reply@mugec-ci.ci";
-  if (!url || !key) return { ok: false, error: "Email provider not configured" };
+  // Brevo (ex-Sendinblue) — https://developers.brevo.com/reference/sendtransacemail
+  const brevoKey = process.env.BREVO_API_KEY;
+  const senderEmail = process.env.BREVO_SENDER_EMAIL ?? "no-reply@mugec-ci.ci";
+  const senderName = process.env.BREVO_SENDER_NAME ?? BRAND_NAME;
+  // Fallback générique
+  const genericUrl = process.env.EMAIL_API_URL;
+  const genericKey = process.env.EMAIL_API_KEY;
+  const genericFrom = process.env.EMAIL_FROM ?? senderEmail;
+
+  if (!brevoKey && !(genericUrl && genericKey)) {
+    return { ok: false, error: "Email provider not configured (BREVO_API_KEY manquant)" };
+  }
+
   const safeBody = escapeHtml(body).replace(/\n/g, "<br/>");
   const html = `<!doctype html><html><body style="margin:0;background:#f5f7fb;font-family:Inter,Arial,sans-serif;color:#0f172a">
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fb;padding:24px 0">
@@ -91,23 +100,44 @@ async function sendEmail(to: string, subject: string, body: string) {
       </td></tr>
     </table>
   </body></html>`;
+
   try {
-    const res = await fetch(url, {
+    if (brevoKey) {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "api-key": brevoKey,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+          textContent: body,
+        }),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        return { ok: false, status: res.status, error: `Brevo ${res.status}: ${txt.slice(0, 200)}` };
+      }
+      const json = (await res.json().catch(() => ({}))) as { messageId?: string };
+      return { ok: true, status: res.status, reference: json.messageId };
+    }
+
+    // Fallback générique
+    const res = await fetch(genericUrl!, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject,
-        text: body,
-        html,
-      }),
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${genericKey}` },
+      body: JSON.stringify({ from: genericFrom, to: [to], subject, text: body, html }),
     });
     return { ok: res.ok, status: res.status };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
+
 
 /** Déclenche l’envoi multi-canal d’un événement basé sur les templates. */
 export const dispatchNotification = createServerFn({ method: "POST" })
