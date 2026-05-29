@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useResumableUpload } from "@/hooks/use-resumable-upload";
 import { toast } from "sonner";
 import { CardListSkeleton } from "@/components/ui/skeletons";
+import { generateAutorisationPrelevementPDF, downloadBlob, type DraftData } from "@/lib/pdf-documents";
 import {
   Download,
   FileText,
@@ -23,6 +24,8 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  FileSignature,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/membre/documents")({ component: Page });
