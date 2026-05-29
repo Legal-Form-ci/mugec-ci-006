@@ -66,18 +66,40 @@ function Page() {
       setBusy(true);
       const { data: member } = await supabase
         .from("members")
-        .select("id")
+        .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (!member) {
-        setBusy(false);
-        return;
-      }
+      if (!member) { setBusy(false); return; }
       setMemberId(member.id);
+      setMemberData({
+        nom: member.nom, prenoms: member.prenoms,
+        dateNaissance: member.date_naissance ?? "", lieuNaissance: member.lieu_naissance ?? "",
+        sexe: (member.sexe as "M" | "F" | undefined) ?? undefined,
+        email: member.email ?? "", telephone: member.telephone ?? "",
+        cni: member.cni ?? "", adresse: member.adresse ?? "",
+        collectivite: member.collectivite ?? "", region: member.region ?? "",
+        direction: member.direction ?? "", fonction: member.fonction ?? "",
+        matriculePro: member.matricule_pro ?? member.matricule ?? "",
+        dateEmbauche: member.date_embauche ?? "", ayantsDroit: member.ayants_droit ?? "",
+        photoIdentite: member.photo_url ?? undefined,
+        reference: member.matricule ?? user.id,
+      });
       await reload(member.id);
       setBusy(false);
     })();
   }, [user]);
+
+  async function downloadAutorisation() {
+    if (!memberData) return;
+    setAutorisationBusy(true);
+    try {
+      const blob = await generateAutorisationPrelevementPDF(memberData);
+      downloadBlob(blob, `autorisation-prelevement-${memberData.matriculePro ?? "mugec"}.pdf`);
+      toast.success("Autorisation de prélèvement téléchargée");
+    } catch { toast.error("Erreur lors de la génération"); }
+    finally { setAutorisationBusy(false); }
+  }
+
 
   async function handleFile(file: File) {
     if (!memberId || !user) return;
