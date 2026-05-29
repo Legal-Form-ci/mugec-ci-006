@@ -376,6 +376,10 @@ export type Database = {
           ayants_droit: string | null
           cni: string | null
           collectivite: string | null
+          consent_at: string | null
+          consent_confidentialite: boolean
+          consent_prelevement: boolean
+          consent_reglement: boolean
           created_at: string
           date_embauche: string | null
           date_inscription: string | null
@@ -416,6 +420,10 @@ export type Database = {
           ayants_droit?: string | null
           cni?: string | null
           collectivite?: string | null
+          consent_at?: string | null
+          consent_confidentialite?: boolean
+          consent_prelevement?: boolean
+          consent_reglement?: boolean
           created_at?: string
           date_embauche?: string | null
           date_inscription?: string | null
@@ -456,6 +464,10 @@ export type Database = {
           ayants_droit?: string | null
           cni?: string | null
           collectivite?: string | null
+          consent_at?: string | null
+          consent_confidentialite?: boolean
+          consent_prelevement?: boolean
+          consent_reglement?: boolean
           created_at?: string
           date_embauche?: string | null
           date_inscription?: string | null
@@ -1026,6 +1038,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_security: {
+        Row: {
+          created_at: string
+          must_change_password: boolean
+          password_changed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       finance_revenue_summary: {
@@ -1113,6 +1149,8 @@ export type Database = {
       open_member_rights_after_90_days: { Args: never; Returns: number }
       resolve_login_email: { Args: { p_identifier: string }; Returns: string }
       role_for_prestation_step: { Args: { _step: number }; Returns: string }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       validate_prestation_step: {
         Args: { _action: string; _motif?: string; _request_id: string }
         Returns: {
