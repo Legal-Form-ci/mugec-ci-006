@@ -180,11 +180,9 @@ function CotisationsPage() {
                   </TableHeader>
                   <TableBody>
                     {loading ? (
-                    {loading ? (
                       <TableRowsSkeleton rows={8} cols={6} />
                     ) : filtered.length === 0 ? (
                       <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Aucune cotisation</TableCell></TableRow>
-                    ) : filtered.map((r) => (
                     ) : filtered.map((r) => (
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">
