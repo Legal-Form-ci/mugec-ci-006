@@ -117,7 +117,6 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
       console.error("finalizeRegistration: subscription insert failed", subErr);
       throw new Error("Échec de l'enregistrement du paiement. Veuillez réessayer.");
     }
-
     // 3) Audit
     await supabaseAdmin.from("audit_log").insert({
       user_id: userId,
@@ -127,6 +126,43 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
       metadata: { reference: data.payment_reference, operateur: data.paiement_methode },
     });
 
+    // 4) Notification immédiate (Brevo) — inscription enregistrée + consentements
+    try {
+      const brevoKey = process.env.BREVO_API_KEY;
+      if (brevoKey) {
+        const subject = "Bienvenue à la MUGEC-CI — inscription enregistrée";
+        const text = `Bonjour ${data.prenoms},\n\nVotre inscription en tant que membre est enregistrée. En vous inscrivant, vous avez expressément accepté :\n• le Règlement intérieur de la mutuelle\n• l'Autorisation de prélèvement des cotisations\n• la Clause de confidentialité et de traitement des données\n\nRéférence paiement : ${data.payment_reference}\n\nVos droits seront ouverts dès confirmation du paiement et après le délai règlementaire.\n\n— MUGEC-CI`;
+        await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: { "accept": "application/json", "api-key": brevoKey, "content-type": "application/json" },
+          body: JSON.stringify({
+            sender: {
+              name: process.env.BREVO_SENDER_NAME ?? "MUGEC-CI",
+              email: process.env.BREVO_SENDER_EMAIL ?? "no-reply@mugec-ci.ci",
+            },
+            to: [{ email: data.email, name: `${data.prenoms} ${data.nom}` }],
+            subject,
+            htmlContent: `<pre style="font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.6;white-space:pre-wrap">${text}</pre>`,
+            textContent: text,
+          }),
+        });
+        await supabaseAdmin.from("notifications_log").insert({
+          member_id: member.id,
+          user_id: userId,
+          canal: "email",
+          event: "registration.completed",
+          contenu: `${subject}\n\n${text}`,
+          statut: "envoye",
+          sent_at: new Date().toISOString(),
+          provider: "brevo",
+        });
+      }
+    } catch (e) {
+      console.error("finalizeRegistration: brevo notification failed", e);
+    }
+
     return { member, subscription: sub };
+  });
+
   });
 
