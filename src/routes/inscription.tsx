@@ -202,11 +202,6 @@ function Page() {
     setSubmitting(true);
     try {
 
-      toast.error("Supabase non configuré.");
-      return;
-    }
-    setSubmitting(true);
-    try {
       const { error: authErr } = await supabase.auth.signUp({
         email: data.email!,
         password: data.password!,
