@@ -138,6 +138,89 @@ function Page() {
         />
       </div>
 
+      {/* Upload widget */}
+      <Card className="mt-6 shadow-[var(--shadow-soft)]">
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Upload className="h-4 w-4 text-primary" /> Téléverser un document
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Formats acceptés : PDF, images, Word. Taille max : 10 Mo. Reprise automatique en cas d'erreur réseau.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <select
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              disabled={upload.state.status === "uploading"}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="justificatif">Justificatif</option>
+              <option value="attestation">Attestation</option>
+              <option value="cni">CNI</option>
+              <option value="extrait_naissance">Extrait de naissance</option>
+              <option value="autre">Autre</option>
+            </select>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,image/*,.doc,.docx"
+              disabled={upload.state.status === "uploading" || !memberId}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+              }}
+              className="flex-1 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:text-primary-foreground hover:file:bg-primary/90"
+            />
+            {upload.state.status === "uploading" && (
+              <Button size="sm" variant="ghost" onClick={upload.cancel}>
+                <X className="mr-1 h-3.5 w-3.5" /> Annuler
+              </Button>
+            )}
+          </div>
+
+          {upload.state.status === "uploading" && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Envoi en cours{upload.state.attempt > 1 && ` · tentative ${upload.state.attempt}/3`}…
+                </span>
+                <span className="font-mono font-medium">{upload.state.progress}%</span>
+              </div>
+              <Progress value={upload.state.progress} className="h-2" />
+            </div>
+          )}
+
+          {upload.state.status === "error" && (
+            <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex-1">
+                <div className="font-medium">Échec de l'upload</div>
+                <div className="text-xs opacity-90">{upload.state.error}</div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  upload.reset();
+                  fileRef.current?.click();
+                }}
+              >
+                Réessayer
+              </Button>
+            </div>
+          )}
+
+          {upload.state.status === "success" && (
+            <div className="flex items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 p-2 text-sm text-emerald-700">
+              <CheckCircle2 className="h-4 w-4" /> Téléversé avec succès
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       {/* Other documents */}
       <Card className="mt-6 shadow-[var(--shadow-soft)]">
         <CardHeader className="flex flex-col gap-3 border-b sm:flex-row sm:items-center sm:justify-between">
