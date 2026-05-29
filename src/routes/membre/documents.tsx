@@ -146,22 +146,36 @@ function Page() {
       title="Mes documents"
       subtitle="Téléchargez votre carte, votre fiche officielle et vos pièces justificatives"
     >
-      {/* Featured documents */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Documents officiels */}
+      <div className="grid gap-4 md:grid-cols-3">
         <FeatureCard
           icon={FileText}
-          title="Fiche officielle"
-          description="Téléchargez votre fiche d'inscription avec QR Code et filigrane MUGEC-CI."
-          to="/membre/carte"
+          title="Fiche d'adhésion"
+          description="Fiche A4 avec QR code, cachet et données pré-remplies."
+          to="/membre/fiche"
           gradient="primary"
         />
         <FeatureCard
           icon={CreditCard}
           title="Carte de membre"
-          description="Carte format CR80 imprimable recto/verso avec QR code de vérification."
+          description="Carte CR80 recto/verso, 300 dpi, QR de vérification."
           to="/membre/carte"
           gradient="accent"
         />
+        <Card className="group relative overflow-hidden border-0 shadow-[var(--shadow-elegant)] transition hover:-translate-y-1 hover:shadow-2xl">
+          <div className="absolute inset-0 opacity-10" style={{ background: "var(--gradient-primary)" }} />
+          <CardContent className="relative p-6">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-lg" style={{ background: "var(--gradient-primary)" }}>
+              <FileSignature className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold tracking-tight">Autorisation de prélèvement</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Document officiel pré-rempli pour votre collectivité (zone signature « Lu et approuvé »).</p>
+            <Button onClick={downloadAutorisation} disabled={!memberData || autorisationBusy} className="mt-5" variant="outline">
+              {autorisationBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {autorisationBusy ? "Génération…" : "Télécharger"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Upload widget */}
