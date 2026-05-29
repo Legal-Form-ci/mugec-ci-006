@@ -28,6 +28,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as VerifierMatriculeRouteImport } from './routes/verifier.$matricule'
 import { Route as MiprojetUtilisateursRouteImport } from './routes/miprojet.utilisateurs'
 import { Route as MembreProfilRouteImport } from './routes/membre/profil'
+import { Route as MembrePrestationsRouteImport } from './routes/membre/prestations'
 import { Route as MembreFicheRouteImport } from './routes/membre/fiche'
 import { Route as MembreDocumentsRouteImport } from './routes/membre/documents'
 import { Route as MembreCotisationsRouteImport } from './routes/membre/cotisations'
@@ -136,6 +137,11 @@ const MembreProfilRoute = MembreProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => MembreRoute,
 } as any)
+const MembrePrestationsRoute = MembrePrestationsRouteImport.update({
+  id: '/prestations',
+  path: '/prestations',
+  getParentRoute: () => MembreRoute,
+} as any)
 const MembreFicheRoute = MembreFicheRouteImport.update({
   id: '/fiche',
   path: '/fiche',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/membre/cotisations': typeof MembreCotisationsRoute
   '/membre/documents': typeof MembreDocumentsRoute
   '/membre/fiche': typeof MembreFicheRoute
+  '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/membre/cotisations': typeof MembreCotisationsRoute
   '/membre/documents': typeof MembreDocumentsRoute
   '/membre/fiche': typeof MembreFicheRoute
+  '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/membre/cotisations': typeof MembreCotisationsRoute
   '/membre/documents': typeof MembreDocumentsRoute
   '/membre/fiche': typeof MembreFicheRoute
+  '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/membre/cotisations'
     | '/membre/documents'
     | '/membre/fiche'
+    | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
     | '/verifier/$matricule'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/membre/cotisations'
     | '/membre/documents'
     | '/membre/fiche'
+    | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
     | '/verifier/$matricule'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/membre/cotisations'
     | '/membre/documents'
     | '/membre/fiche'
+    | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
     | '/verifier/$matricule'
@@ -548,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MembreProfilRouteImport
       parentRoute: typeof MembreRoute
     }
+    '/membre/prestations': {
+      id: '/membre/prestations'
+      path: '/prestations'
+      fullPath: '/membre/prestations'
+      preLoaderRoute: typeof MembrePrestationsRouteImport
+      parentRoute: typeof MembreRoute
+    }
     '/membre/fiche': {
       id: '/membre/fiche'
       path: '/fiche'
@@ -666,6 +685,7 @@ interface MembreRouteChildren {
   MembreCotisationsRoute: typeof MembreCotisationsRoute
   MembreDocumentsRoute: typeof MembreDocumentsRoute
   MembreFicheRoute: typeof MembreFicheRoute
+  MembrePrestationsRoute: typeof MembrePrestationsRoute
   MembreProfilRoute: typeof MembreProfilRoute
   MembreIndexRoute: typeof MembreIndexRoute
 }
@@ -675,6 +695,7 @@ const MembreRouteChildren: MembreRouteChildren = {
   MembreCotisationsRoute: MembreCotisationsRoute,
   MembreDocumentsRoute: MembreDocumentsRoute,
   MembreFicheRoute: MembreFicheRoute,
+  MembrePrestationsRoute: MembrePrestationsRoute,
   MembreProfilRoute: MembreProfilRoute,
   MembreIndexRoute: MembreIndexRoute,
 }
