@@ -55,7 +55,11 @@ type FormData = {
   autorisationSignee: UploadedFile | null;
   password: string;
   paiement: "orange" | "mtn" | "wave" | "moov";
+  consentReglement: boolean;
+  consentPrelevement: boolean;
+  consentConfidentialite: boolean;
 };
+
 
 const steps = [
   { id: 1, label: "Formulaire", icon: User },
@@ -185,18 +189,19 @@ function Page() {
       } else {
         toast.error("Veuillez vérifier le formulaire.");
       }
-      return false;
-    }
-  }
-
   async function submit() {
     if (!validateStep()) return;
+    if (!data.consentReglement || !data.consentPrelevement || !data.consentConfidentialite) {
+      toast.error("Veuillez accepter les trois engagements (règlement, prélèvement, confidentialité).");
+      return;
+    }
     if (!isSupabaseConfigured) {
       toast.error("Supabase non configuré.");
       return;
     }
     setSubmitting(true);
     try {
+
       const { error: authErr } = await supabase.auth.signUp({
         email: data.email!,
         password: data.password!,
@@ -247,8 +252,12 @@ function Page() {
           photo_url: photoPath,
           paiement_methode: data.paiement!,
           payment_reference: payRef,
+          consent_reglement: true,
+          consent_prelevement: true,
+          consent_confidentialite: true,
         },
       });
+
 
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       toast.success("Inscription validée. Bienvenue !");
@@ -475,8 +484,30 @@ function Page() {
                   <Summary k="Collectivité" v={data.collectivite ?? "—"} />
                   <Summary k="Paiement" v={`${data.paiement ?? "orange"} — 5 000 FCFA`} />
                 </dl>
+
+                <div className="rounded-md border bg-secondary/40 p-4 space-y-3 text-sm">
+                  <p className="font-semibold text-foreground">
+                    Acceptations expresses requises pour devenir membre :
+                  </p>
+                  {[
+                    { k: "consentReglement" as const, label: "J'accepte le Règlement intérieur de la MUGEC-CI." },
+                    { k: "consentPrelevement" as const, label: "J'autorise expressément le prélèvement de mes cotisations selon le calendrier de la mutuelle." },
+                    { k: "consentConfidentialite" as const, label: "Je consens au traitement de mes données conformément à la Clause de confidentialité." },
+                  ].map((c) => (
+                    <label key={c.k} className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4 accent-primary"
+                        checked={!!(data as any)[c.k]}
+                        onChange={(e) => upd(c.k as any, e.target.checked as any)}
+                      />
+                      <span>{c.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             )}
+
 
             <div className="mt-8 flex items-center justify-between">
               <Button type="button" variant="ghost" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
@@ -516,4 +547,6 @@ function Summary({ k, v }: { k: string; v: string }) {
       <dd className="mt-1 font-medium text-foreground">{v || "—"}</dd>
     </div>
   );
+}
+}
 }

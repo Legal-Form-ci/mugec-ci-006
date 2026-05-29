@@ -117,14 +117,21 @@ export const createAdminUser = createServerFn({ method: "POST" })
       userId = created.user?.id ?? null;
     }
     if (!userId) throw new Error("Impossible de créer l'utilisateur");
-
     // rôle (un seul rôle administrable par cette fonction, on ajoute sans écraser membre)
     await supabaseAdmin.from("user_roles").upsert(
       { user_id: userId, role: roleToInsert as any },
       { onConflict: "user_id,role", ignoreDuplicates: true },
     );
 
-    // journal invitation (table créée via migration ; cast pour contourner types générés)
+    // Forcer le changement de mot de passe à la 1ère connexion
+    await supabaseAdmin.from("user_security").upsert({
+      user_id: userId,
+      must_change_password: true,
+      password_changed_at: null,
+      updated_at: new Date().toISOString(),
+    });
+
+    // journal invitation
     await (supabaseAdmin as any).from("admin_invitations").insert({
       target_user_id: userId,
       target_email: data.email,
@@ -136,45 +143,54 @@ export const createAdminUser = createServerFn({ method: "POST" })
       status: "created",
     });
 
-    // envoi de l'invitation (via Email ou WhatsApp)
+    // Construction du message
+    const portalLabel = data.portal === "miprojet" ? "MIPROJET" : "MUGEC-CI";
     const portalUrl = data.portal === "miprojet" ? "/miprojet" : "/admin";
-    const message = `Bonjour ${data.full_name},\n\nVotre compte ${data.portal === "miprojet" ? "MIPROJET" : "MUGEC-CI"} a été créé.\n\nIdentifiant : ${data.email}\nMot de passe : ${password}\n\nConnectez-vous sur ${portalUrl}\n\nMerci de modifier votre mot de passe à la première connexion.`;
+    const baseUrl = process.env.PUBLIC_APP_URL ?? "https://mugec-ci.ivoireprojet.com";
+    const loginUrl = `${baseUrl}/login`;
+    const subject = `Vos accès ${portalLabel} — MUGEC-CI`;
+    const text = `Bonjour ${data.full_name},\n\nVotre compte ${portalLabel} (rôle : ${roleToInsert}) a été créé.\n\nIdentifiant : ${data.email}\nMot de passe provisoire : ${password}\n\nConnectez-vous : ${loginUrl}${portalUrl}\nÀ votre première connexion, vous serez invité à définir un nouveau mot de passe.\n\n— MUGEC-CI`;
 
+    let delivered: "email" | "whatsapp" | "manual" = "manual";
     try {
       if (data.send_via === "email") {
-        const url = process.env.EMAIL_API_URL;
-        const key = process.env.EMAIL_API_KEY;
-        const from = process.env.EMAIL_FROM ?? "no-reply@mugec-ci.local";
-        if (url && key) {
-          await fetch(url, {
+        const brevoKey = process.env.BREVO_API_KEY;
+        if (brevoKey) {
+          const r = await fetch("https://api.brevo.com/v3/smtp/email", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+            headers: { "accept": "application/json", "api-key": brevoKey, "content-type": "application/json" },
             body: JSON.stringify({
-              from, to: [data.email],
-              subject: `Vos accès ${data.portal === "miprojet" ? "MIPROJET" : "MUGEC-CI"}`,
-              text: message,
+              sender: {
+                name: process.env.BREVO_SENDER_NAME ?? "MUGEC-CI",
+                email: process.env.BREVO_SENDER_EMAIL ?? "no-reply@mugec-ci.ci",
+              },
+              to: [{ email: data.email, name: data.full_name }],
+              subject,
+              htmlContent: `<pre style="font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.6">${text.replace(/[<>&]/g, (c) => ({"<":"&lt;",">":"&gt;","&":"&amp;"} as any)[c])}</pre>`,
+              textContent: text,
             }),
           });
+          if (r.ok) delivered = "email";
         }
       } else if (data.send_via === "whatsapp" && data.phone) {
         const url = process.env.WHATSAPP_API_URL;
         const token = process.env.WHATSAPP_API_TOKEN;
         if (url && token) {
-          await fetch(url, {
+          const r = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ messaging_product: "whatsapp", to: data.phone, text: { body: message } }),
+            body: JSON.stringify({ messaging_product: "whatsapp", to: data.phone, text: { body: text } }),
           });
+          if (r.ok) delivered = "whatsapp";
         }
       }
-    } catch { /* logged via invitations row */ }
+    } catch (e) {
+      console.error("createAdminUser: notification send failed", e);
+    }
 
-    // Le mot de passe n'est jamais renvoyé dans la réponse (évite les fuites
-    // via logs / DevTools). Il est envoyé à l'utilisateur via email/WhatsApp.
-    // Si aucun canal n'est configuré, le super-admin doit utiliser le flux
-    // "réinitialiser le mot de passe" pour générer un nouveau code.
-    return { ok: true, user_id: userId, password_delivered: isGenerated ? data.send_via : "manual" };
+    return { ok: true, user_id: userId, password_delivered: delivered };
   });
+
 
 
 export const updateAdminUser = createServerFn({ method: "POST" })
