@@ -159,9 +159,8 @@ function Page() {
         </CardHeader>
         <CardContent className="p-0">
           {busy ? (
-            <div className="flex h-40 items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            </div>
+            <div className="p-6"><CardListSkeleton count={3} /></div>
+          ) : filtered.length === 0 ? (
           ) : filtered.length === 0 ? (
             <div className="p-12 text-center text-sm text-muted-foreground">
               <FolderOpen className="mx-auto mb-2 h-10 w-10 opacity-30" />
