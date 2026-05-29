@@ -483,8 +483,30 @@ function Page() {
                   <Summary k="Collectivité" v={data.collectivite ?? "—"} />
                   <Summary k="Paiement" v={`${data.paiement ?? "orange"} — 5 000 FCFA`} />
                 </dl>
+
+                <div className="rounded-md border bg-secondary/40 p-4 space-y-3 text-sm">
+                  <p className="font-semibold text-foreground">
+                    Acceptations expresses requises pour devenir membre :
+                  </p>
+                  {[
+                    { k: "consentReglement" as const, label: "J'accepte le Règlement intérieur de la MUGEC-CI." },
+                    { k: "consentPrelevement" as const, label: "J'autorise expressément le prélèvement de mes cotisations selon le calendrier de la mutuelle." },
+                    { k: "consentConfidentialite" as const, label: "Je consens au traitement de mes données conformément à la Clause de confidentialité." },
+                  ].map((c) => (
+                    <label key={c.k} className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4 accent-primary"
+                        checked={!!(data as any)[c.k]}
+                        onChange={(e) => upd(c.k as any, e.target.checked as any)}
+                      />
+                      <span>{c.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             )}
+
 
             <div className="mt-8 flex items-center justify-between">
               <Button type="button" variant="ghost" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
