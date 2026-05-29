@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const inputSchema = z.object({
   identifier: z.string().trim().min(3).max(255),
@@ -36,7 +37,9 @@ export const loginWithIdentifier = createServerFn({ method: "POST" })
       auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
     });
 
-    const { data: resolvedEmail, error: resolveError } = await authClient.rpc(
+    // Use service-role admin client so unauthenticated browsers cannot call
+    // resolve_login_email directly as an email-enumeration oracle.
+    const { data: resolvedEmail, error: resolveError } = await supabaseAdmin.rpc(
       "resolve_login_email",
       {
         p_identifier: identifier,
