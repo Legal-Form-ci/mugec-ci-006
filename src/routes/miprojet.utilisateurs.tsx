@@ -85,13 +85,18 @@ function MiprojetUsers() {
     setSubmitting(true);
     setGeneratedPwd(null);
     try {
-      const res = await create({ data: { ...form, phone: form.phone || undefined, password: form.password || undefined } });
-      setGeneratedPwd((res as any).password);
-      toast.success("Utilisateur créé et invitation envoyée");
+      await create({ data: { ...form, phone: form.phone || undefined, password: form.password || undefined } });
+      toast.success(
+        form.password
+          ? "Utilisateur créé. Communiquez le mot de passe à l'utilisateur."
+          : `Utilisateur créé. Un mot de passe aléatoire a été envoyé par ${form.send_via === "email" ? "email" : "WhatsApp"}.`,
+      );
+      setDialogOpen(false);
       load();
     } catch (e: any) { toast.error(e?.message ?? "Erreur"); }
     finally { setSubmitting(false); }
   }
+
 
   async function handleResetPwd(uid: string) {
     if (!confirm("Réinitialiser le mot de passe ?")) return;
@@ -211,7 +216,8 @@ function MiprojetUsers() {
                 <div><Label>Téléphone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+225…" /></div>
               </div>
               <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><Label>Mot de passe (vide = défaut)</Label><Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={form.portal === "mugec" ? "@Mugec26" : "@Miprojet"} /></div>
+              <div><Label>Mot de passe (vide = aléatoire sécurisé envoyé à l'utilisateur)</Label><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Laisser vide pour génération automatique" /></div>
+
               <div>
                 <Label>Envoyer l'invitation par</Label>
                 <RadioGroup value={form.send_via} onValueChange={(v: any) => setForm({ ...form, send_via: v })} className="mt-2 grid grid-cols-2 gap-2">
