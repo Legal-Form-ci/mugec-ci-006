@@ -245,6 +245,10 @@ function Page() {
           region: data.region!,
           direction: data.direction || null,
           fonction: data.fonction!,
+          matricule_pro: data.matriculePro || null,
+          date_embauche: data.dateEmbauche || null,
+          ayants_droit: ayantsText() || null,
+          photo_url: photoPath,
           paiement_methode: data.paiement!,
           payment_reference: payRef,
           consent_reglement: true,
@@ -253,9 +257,6 @@ function Page() {
         },
       });
 
-          payment_reference: payRef,
-        },
-      });
 
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       toast.success("Inscription validée. Bienvenue !");
