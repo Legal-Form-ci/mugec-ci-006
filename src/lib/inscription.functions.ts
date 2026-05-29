@@ -25,30 +25,19 @@ const memberSchema = z.object({
     .max(500)
     .regex(/^[A-Za-z0-9._\-/]+$/, "Chemin photo invalide")
     .refine((v) => !v.startsWith("data:") && !/^https?:\/\//i.test(v), "Chemin photo invalide")
-    .optional()
-    .nullable(),
-  paiement_methode: z.enum(["orange", "mtn", "wave", "moov"]),
-  payment_reference: z.string().min(3).max(80),
-});
-
 /**
- * MODE TEST (paiement simulé) — Tant que les API CinetPay/Fedapay ne sont pas
- * connectées, le "paiement" est validé immédiatement côté serveur :
- *  - membre créé avec statut = 'actif', frais_paye = true
- *  - subscription marquée 'paye'
- *  - droits ouverts immédiatement (droits_ouverts_le = now())
- * Quand les vrais webhooks seront branchés, il suffira de retirer le bloc
- * "SIMULATED PAYMENT" pour revenir au mode "en_attente" + activation par
- * webhook.
+ * Crée le membre et la souscription d'inscription en statut "en_attente".
+ * Aucun privilège n'est ouvert tant que le webhook du PSP (CinetPay / FedaPay)
+ * n'a pas confirmé le paiement. Les droits sont ouverts par le job
+ * `open_member_rights_after_90_days` une fois le paiement validé.
  */
 export const finalizeRegistration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => memberSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const now = new Date().toISOString();
 
-    // 1) Membre — activation immédiate (paiement simulé)
+    // 1) Membre — création en attente de paiement réel
     const { data: member, error: memberErr } = await supabaseAdmin
       .from("members")
       .insert({
@@ -70,12 +59,12 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
         date_embauche: data.date_embauche || null,
         ayants_droit: data.ayants_droit,
         photo_url: data.photo_url ?? null,
-        statut: "actif",
+        statut: "en_attente",
         paiement_methode: data.paiement_methode,
-        frais_paye: true,
+        frais_paye: false,
         payment_reference: data.payment_reference,
-        payment_confirmed_at: now,
-        droits_ouverts_le: now,
+        payment_confirmed_at: null,
+        droits_ouverts_le: null,
         validation_mode: "automatique",
       })
       .select()
@@ -85,7 +74,7 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
       throw new Error("Échec de la création du compte. Veuillez réessayer.");
     }
 
-    // 2) Souscription d'inscription — payée
+    // 2) Souscription d'inscription — en attente de confirmation PSP
     const { data: sub, error: subErr } = await supabaseAdmin
       .from("subscriptions")
       .insert({
@@ -94,10 +83,10 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
         montant_total: 5000,
         part_mutuelle: 4000,
         part_miprojet: 1000,
-        statut_paiement: "paye",
+        statut_paiement: "en_attente",
         operateur: data.paiement_methode,
         reference_transaction: data.payment_reference,
-        paid_at: now,
+        paid_at: null,
       })
       .select()
       .single();
@@ -106,63 +95,15 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
       throw new Error("Échec de l'enregistrement du paiement. Veuillez réessayer.");
     }
 
-    // 3) Trace MiPROJET (1 000 FCFA) — confirmé
-    await supabaseAdmin.from("transactions_miprojet").insert({
-      subscription_id: sub.id,
-      montant: 1000,
-      statut: "confirme",
-      reference: data.payment_reference,
-      date_virement: now,
-    });
-
-    // 4) Cotisation d'inscription au journal des cotisations
-    await supabaseAdmin.from("cotisations").insert({
-      member_id: member.id,
-      periode: new Date().toISOString().slice(0, 7),
-      montant: 5000,
-      statut: "paye",
-      methode: data.paiement_methode,
-      reference: data.payment_reference,
-      paye_le: now,
-    });
-
-    // 5) Audit
+    // 3) Audit
     await supabaseAdmin.from("audit_log").insert({
       user_id: userId,
-      action: "registration.completed",
+      action: "registration.pending_payment",
       entity: "members",
       entity_id: member.id,
-      metadata: { simulated_payment: true, reference: data.payment_reference },
+      metadata: { reference: data.payment_reference, operateur: data.paiement_methode },
     });
-
-    // 6) Notification d'accueil
-    const baseUrl = "https://mugec-ci.ivoireprojet.com";
-    const ctx = {
-      prenoms: member.prenoms,
-      nom: member.nom,
-      matricule: member.matricule ?? "",
-      collectivite: member.collectivite ?? "",
-      region: member.region ?? "",
-      member_url: `${baseUrl}/membre`,
-      montant: 5000,
-      operateur: data.paiement_methode,
-    } as const;
-
-    try {
-      const { dispatchNotification } = await import("./notifications.functions");
-      await dispatchNotification({
-        data: {
-          event: "registration_completed",
-          memberId: member.id,
-          userId,
-          to: { email: member.email ?? undefined, phone: member.telephone ?? undefined, whatsapp: member.telephone ?? undefined },
-          channels: ["email", "sms", "whatsapp"],
-          context: ctx,
-        },
-      });
-    } catch (e) {
-      console.error("notif dispatch failed", e);
-    }
 
     return { member, subscription: sub };
   });
+

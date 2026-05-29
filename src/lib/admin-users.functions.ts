@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
@@ -67,9 +68,11 @@ const createSchema = z.object({
   password: z.string().min(6).max(60).optional(),
 });
 
-function defaultPwd(portal: "mugec" | "miprojet") {
-  return portal === "mugec" ? "@Mugec26" : "@Miprojet";
+function generateStrongPassword() {
+  // 18 base64url chars (~108 bits of entropy)
+  return randomBytes(14).toString("base64url");
 }
+
 
 export const createAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
