@@ -14,7 +14,6 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Users, Search, MoreHorizontal, Filter } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/ui/skeletons";
