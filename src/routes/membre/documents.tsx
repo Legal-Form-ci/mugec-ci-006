@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useResumableUpload } from "@/hooks/use-resumable-upload";
 import { toast } from "sonner";
 import { CardListSkeleton } from "@/components/ui/skeletons";
+import { generateAutorisationPrelevementPDF, downloadBlob, type DraftData } from "@/lib/pdf-documents";
 import {
   Download,
   FileText,
@@ -23,6 +24,8 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  FileSignature,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/membre/documents")({ component: Page });
@@ -36,13 +39,14 @@ type Doc = {
   mime_type: string | null;
   created_at: string;
 };
-
 function Page() {
   const { user } = useAuth();
   const [memberId, setMemberId] = useState<string | null>(null);
+  const [memberData, setMemberData] = useState<DraftData | null>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [busy, setBusy] = useState(true);
   const [q, setQ] = useState("");
+  const [autorisationBusy, setAutorisationBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [docType, setDocType] = useState("justificatif");
   const upload = useResumableUpload("documents");
@@ -62,18 +66,40 @@ function Page() {
       setBusy(true);
       const { data: member } = await supabase
         .from("members")
-        .select("id")
+        .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (!member) {
-        setBusy(false);
-        return;
-      }
+      if (!member) { setBusy(false); return; }
       setMemberId(member.id);
+      setMemberData({
+        nom: member.nom, prenoms: member.prenoms,
+        dateNaissance: member.date_naissance ?? "", lieuNaissance: member.lieu_naissance ?? "",
+        sexe: (member.sexe as "M" | "F" | undefined) ?? undefined,
+        email: member.email ?? "", telephone: member.telephone ?? "",
+        cni: member.cni ?? "", adresse: member.adresse ?? "",
+        collectivite: member.collectivite ?? "", region: member.region ?? "",
+        direction: member.direction ?? "", fonction: member.fonction ?? "",
+        matriculePro: member.matricule_pro ?? member.matricule ?? "",
+        dateEmbauche: member.date_embauche ?? "", ayantsDroit: member.ayants_droit ?? "",
+        photoIdentite: member.photo_url ?? undefined,
+        reference: member.matricule ?? user.id,
+      });
       await reload(member.id);
       setBusy(false);
     })();
   }, [user]);
+
+  async function downloadAutorisation() {
+    if (!memberData) return;
+    setAutorisationBusy(true);
+    try {
+      const blob = await generateAutorisationPrelevementPDF(memberData);
+      downloadBlob(blob, `autorisation-prelevement-${memberData.matriculePro ?? "mugec"}.pdf`);
+      toast.success("Autorisation de prélèvement téléchargée");
+    } catch { toast.error("Erreur lors de la génération"); }
+    finally { setAutorisationBusy(false); }
+  }
+
 
   async function handleFile(file: File) {
     if (!memberId || !user) return;
@@ -120,22 +146,36 @@ function Page() {
       title="Mes documents"
       subtitle="Téléchargez votre carte, votre fiche officielle et vos pièces justificatives"
     >
-      {/* Featured documents */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Documents officiels */}
+      <div className="grid gap-4 md:grid-cols-3">
         <FeatureCard
           icon={FileText}
-          title="Fiche officielle"
-          description="Téléchargez votre fiche d'inscription avec QR Code et filigrane MUGEC-CI."
-          to="/membre/carte"
+          title="Fiche d'adhésion"
+          description="Fiche A4 avec QR code, cachet et données pré-remplies."
+          to="/membre/fiche"
           gradient="primary"
         />
         <FeatureCard
           icon={CreditCard}
           title="Carte de membre"
-          description="Carte format CR80 imprimable recto/verso avec QR code de vérification."
+          description="Carte CR80 recto/verso, 300 dpi, QR de vérification."
           to="/membre/carte"
           gradient="accent"
         />
+        <Card className="group relative overflow-hidden border-0 shadow-[var(--shadow-elegant)] transition hover:-translate-y-1 hover:shadow-2xl">
+          <div className="absolute inset-0 opacity-10" style={{ background: "var(--gradient-primary)" }} />
+          <CardContent className="relative p-6">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-lg" style={{ background: "var(--gradient-primary)" }}>
+              <FileSignature className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold tracking-tight">Autorisation de prélèvement</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Document officiel pré-rempli pour votre collectivité (zone signature « Lu et approuvé »).</p>
+            <Button onClick={downloadAutorisation} disabled={!memberData || autorisationBusy} className="mt-5" variant="outline">
+              {autorisationBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {autorisationBusy ? "Génération…" : "Télécharger"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Upload widget */}

@@ -11,6 +11,7 @@ import {
 
 import { AuthProvider } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -131,6 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
+        <PWAInstallPrompt />
       </AuthProvider>
     </QueryClientProvider>
   );

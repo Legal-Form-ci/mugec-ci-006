@@ -28,6 +28,7 @@ import {
   LogOut,
   Home,
   Bell,
+  HeartHandshake,
 } from "lucide-react";
 import logo from "@/assets/mugec-logo.png";
 import { useAuth } from "@/lib/auth";
@@ -36,8 +37,10 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 const NAV_ITEMS = [
   { to: "/membre", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/membre/profil", label: "Mon profil", icon: User },
+  { to: "/membre/carte", label: "Ma carte", icon: CreditCard },
   { to: "/membre/documents", label: "Documents", icon: FileText },
   { to: "/membre/cotisations", label: "Cotisations", icon: Wallet },
+  { to: "/membre/prestations", label: "Prestations", icon: HeartHandshake },
 ] as const;
 
 type MemberSummary = {
