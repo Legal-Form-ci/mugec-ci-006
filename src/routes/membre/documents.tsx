@@ -161,7 +161,6 @@ function Page() {
           {busy ? (
             <div className="p-6"><CardListSkeleton count={3} /></div>
           ) : filtered.length === 0 ? (
-          ) : filtered.length === 0 ? (
             <div className="p-12 text-center text-sm text-muted-foreground">
               <FolderOpen className="mx-auto mb-2 h-10 w-10 opacity-30" />
               {q ? "Aucun résultat" : "Aucun document"}
