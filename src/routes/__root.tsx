@@ -132,6 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
+        <PWAInstallPrompt />
       </AuthProvider>
     </QueryClientProvider>
   );
