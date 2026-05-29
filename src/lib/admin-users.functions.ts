@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
@@ -67,16 +68,20 @@ const createSchema = z.object({
   password: z.string().min(6).max(60).optional(),
 });
 
-function defaultPwd(portal: "mugec" | "miprojet") {
-  return portal === "mugec" ? "@Mugec26" : "@Miprojet";
+function generateStrongPassword() {
+  // 18 base64url chars (~108 bits of entropy)
+  return randomBytes(14).toString("base64url");
 }
+
 
 export const createAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => createSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.userId);
-    const password = data.password || defaultPwd(data.portal);
+    const password = data.password || generateStrongPassword();
+    const isGenerated = !data.password;
+
 
     // valider le rôle demandé
     let roleToInsert: string;
@@ -164,8 +169,13 @@ export const createAdminUser = createServerFn({ method: "POST" })
       }
     } catch { /* logged via invitations row */ }
 
-    return { ok: true, user_id: userId, password };
+    // Le mot de passe n'est jamais renvoyé dans la réponse (évite les fuites
+    // via logs / DevTools). Il est envoyé à l'utilisateur via email/WhatsApp.
+    // Si aucun canal n'est configuré, le super-admin doit utiliser le flux
+    // "réinitialiser le mot de passe" pour générer un nouveau code.
+    return { ok: true, user_id: userId, password_delivered: isGenerated ? data.send_via : "manual" };
   });
+
 
 export const updateAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -188,13 +198,15 @@ export const updateAdminUser = createServerFn({ method: "POST" })
       await supabaseAdmin.from("user_roles").insert({ user_id: data.user_id, role: data.new_role as any });
     }
     if (data.reset_password) {
-      const newPwd = "@Reset" + Math.floor(Math.random() * 9000 + 1000);
+      const newPwd = generateStrongPassword();
       const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: newPwd });
       if (error) throw new Error(error.message);
+      // Renvoyé une seule fois au super-admin pour transmission hors-bande.
       return { ok: true, password: newPwd };
     }
     return { ok: true };
   });
+
 
 export const deleteAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
