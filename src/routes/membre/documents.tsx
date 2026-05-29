@@ -50,8 +50,6 @@ function Page() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [docType, setDocType] = useState("justificatif");
   const upload = useResumableUpload("documents");
-  const [docType, setDocType] = useState("justificatif");
-  const upload = useResumableUpload("documents");
 
   async function reload(mid: string) {
     const { data } = await supabase
