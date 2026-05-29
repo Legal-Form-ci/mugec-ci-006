@@ -127,7 +127,6 @@ function MembresPage() {
                 ) : rows.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Aucun membre</TableCell></TableRow>
                 ) : rows.map((m) => (
-                ) : rows.map((m) => (
                   <TableRow key={m.id} className="group">
                     <TableCell>
                       <Avatar className="h-9 w-9 ring-2 ring-background shadow-sm">
