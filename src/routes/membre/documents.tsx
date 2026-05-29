@@ -39,14 +39,17 @@ type Doc = {
   mime_type: string | null;
   created_at: string;
 };
-
 function Page() {
   const { user } = useAuth();
   const [memberId, setMemberId] = useState<string | null>(null);
+  const [memberData, setMemberData] = useState<DraftData | null>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [busy, setBusy] = useState(true);
   const [q, setQ] = useState("");
+  const [autorisationBusy, setAutorisationBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [docType, setDocType] = useState("justificatif");
+  const upload = useResumableUpload("documents");
   const [docType, setDocType] = useState("justificatif");
   const upload = useResumableUpload("documents");
 
