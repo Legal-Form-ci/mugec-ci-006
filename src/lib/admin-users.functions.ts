@@ -198,10 +198,6 @@ export const updateAdminUser = createServerFn({ method: "POST" })
       await supabaseAdmin.from("user_roles").insert({ user_id: data.user_id, role: data.new_role as any });
     }
     if (data.reset_password) {
-      const newPwd = "@Reset" + Math.floor(Math.random() * 9000 + 1000);
-      const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: newPwd });
-      if (error) throw new Error(error.message);
-    if (data.reset_password) {
       const newPwd = generateStrongPassword();
       const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, { password: newPwd });
       if (error) throw new Error(error.message);
@@ -210,6 +206,7 @@ export const updateAdminUser = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
 
 export const deleteAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
