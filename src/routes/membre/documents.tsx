@@ -1,21 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MembreLayout } from "@/components/membre/MembreLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useResumableUpload } from "@/hooks/use-resumable-upload";
+import { toast } from "sonner";
+import { CardListSkeleton } from "@/components/ui/skeletons";
 import {
   Download,
   FileText,
-  Loader2,
   QrCode,
   CreditCard,
   Search,
   ExternalLink,
   FolderOpen,
+  Upload,
+  X,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/membre/documents")({ component: Page });

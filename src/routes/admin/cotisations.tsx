@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { dispatchNotification } from "@/lib/notifications.functions";
 import { Wallet, Search, Send, MessageSquare, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { TableRowsSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/admin/cotisations")({ component: CotisationsPage });
 
@@ -179,9 +180,11 @@ function CotisationsPage() {
                   </TableHeader>
                   <TableBody>
                     {loading ? (
-                      <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Chargement…</TableCell></TableRow>
+                    {loading ? (
+                      <TableRowsSkeleton rows={8} cols={6} />
                     ) : filtered.length === 0 ? (
                       <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Aucune cotisation</TableCell></TableRow>
+                    ) : filtered.map((r) => (
                     ) : filtered.map((r) => (
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">
