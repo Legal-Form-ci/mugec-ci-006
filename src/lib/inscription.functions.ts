@@ -164,5 +164,3 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
     return { member, subscription: sub };
   });
 
-  });
-
