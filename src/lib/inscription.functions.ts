@@ -25,6 +25,13 @@ const memberSchema = z.object({
     .max(500)
     .regex(/^[A-Za-z0-9._\-/]+$/, "Chemin photo invalide")
     .refine((v) => !v.startsWith("data:") && !/^https?:\/\//i.test(v), "Chemin photo invalide")
+    .optional()
+    .nullable(),
+  paiement_methode: z.enum(["orange", "mtn", "wave", "moov"]),
+  payment_reference: z.string().min(3).max(80),
+});
+
+
 /**
  * Crée le membre et la souscription d'inscription en statut "en_attente".
  * Aucun privilège n'est ouvert tant que le webhook du PSP (CinetPay / FedaPay)
