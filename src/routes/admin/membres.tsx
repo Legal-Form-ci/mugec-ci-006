@@ -14,8 +14,10 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Users, Search, MoreHorizontal, Filter } from "lucide-react";
+import { TableRowsSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/admin/membres")({ component: MembresPage });
 
@@ -37,6 +39,7 @@ function MembresPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [total, setTotal] = useState<number | null>(null);
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("all");
 
@@ -44,23 +47,31 @@ function MembresPage() {
     setLoading(true);
     let qb = supabase
       .from("members")
-      .select("id, matricule, nom, prenoms, telephone, email, statut, created_at, photo_url, region, collectivite")
+      .select("id, matricule, nom, prenoms, telephone, email, statut, created_at, photo_url, region, collectivite", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(page * PAGE, page * PAGE + PAGE - 1);
     if (statut !== "all") qb = qb.eq("statut", statut);
     if (q.trim()) {
-      // Escape PostgREST-special characters to prevent filter injection via .or()
       const safe = q.trim().replace(/[(),*\\]/g, " ").slice(0, 100);
       const s = `%${safe}%`;
       qb = qb.or(`nom.ilike.${s},prenoms.ilike.${s},telephone.ilike.${s},matricule.ilike.${s},email.ilike.${s}`);
     }
-    const { data, error } = await qb;
+    const { data, error, count } = await qb;
     if (error) {
       console.error("admin members load failed", error);
       toast.error("Impossible de charger la liste des membres.");
-    } else setRows((data as Row[]) || []);
+    } else {
+      setRows((data as Row[]) || []);
+      if (typeof count === "number") setTotal(count);
+    }
     setLoading(false);
   }
+  // Debounce search → server-side
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(0); load(); }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [q]);
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [page, statut]);
 
   async function setStatus(id: string, s: string) {
@@ -112,9 +123,10 @@ function MembresPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Chargement…</TableCell></TableRow>
+                  <TableRowsSkeleton rows={8} cols={7} />
                 ) : rows.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Aucun membre</TableCell></TableRow>
+                ) : rows.map((m) => (
                 ) : rows.map((m) => (
                   <TableRow key={m.id} className="group">
                     <TableCell>
@@ -152,7 +164,9 @@ function MembresPage() {
             </Table>
             <div className="mt-4 flex items-center justify-between">
               <Button variant="outline" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>← Précédent</Button>
-              <span className="text-sm text-muted-foreground">Page {page + 1}</span>
+              <span className="text-sm text-muted-foreground">
+                Page {page + 1}{total !== null && ` · ${total.toLocaleString("fr-FR")} membre(s)`}
+              </span>
               <Button variant="outline" disabled={rows.length < PAGE} onClick={() => setPage((p) => p + 1)}>Suivant →</Button>
             </div>
           </CardContent>
