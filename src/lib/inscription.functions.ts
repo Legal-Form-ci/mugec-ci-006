@@ -29,7 +29,18 @@ const memberSchema = z.object({
     .nullable(),
   paiement_methode: z.enum(["orange", "mtn", "wave", "moov"]),
   payment_reference: z.string().min(3).max(80),
+  // Consentements expressément acceptés à l'inscription
+  consent_reglement: z.literal(true, {
+    errorMap: () => ({ message: "Vous devez accepter le Règlement intérieur." }),
+  }),
+  consent_prelevement: z.literal(true, {
+    errorMap: () => ({ message: "Vous devez accepter l'autorisation de prélèvement." }),
+  }),
+  consent_confidentialite: z.literal(true, {
+    errorMap: () => ({ message: "Vous devez accepter la clause de confidentialité." }),
+  }),
 });
+
 
 
 /**
