@@ -55,7 +55,11 @@ type FormData = {
   autorisationSignee: UploadedFile | null;
   password: string;
   paiement: "orange" | "mtn" | "wave" | "moov";
+  consentReglement: boolean;
+  consentPrelevement: boolean;
+  consentConfidentialite: boolean;
 };
+
 
 const steps = [
   { id: 1, label: "Formulaire", icon: User },
