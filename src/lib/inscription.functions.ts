@@ -84,7 +84,12 @@ export const finalizeRegistration = createServerFn({ method: "POST" })
         payment_confirmed_at: null,
         droits_ouverts_le: null,
         validation_mode: "automatique",
+        consent_reglement: data.consent_reglement,
+        consent_prelevement: data.consent_prelevement,
+        consent_confidentialite: data.consent_confidentialite,
+        consent_at: new Date().toISOString(),
       })
+
       .select()
       .single();
     if (memberErr) {
