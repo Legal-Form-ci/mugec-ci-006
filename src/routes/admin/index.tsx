@@ -135,10 +135,23 @@ function AdminDashboard() {
   }
   async function saveEdit() {
     if (!editData) return;
-    const { id, created_at, updated_at, user_id, ...patch } = editData;
-    const { error } = await supabase.from("members").update(patch).eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Membre mis à jour"); setEditOpen(false); loadMembers(); }
+    try {
+      const { updateMemberSafe } = await import("@/lib/secure-actions.functions");
+      const allowed = [
+        "nom","prenoms","email","telephone","cni","adresse","photo_url",
+        "collectivite","region","direction","fonction","matricule_pro","sexe",
+        "lieu_naissance","date_naissance","date_embauche","ayants_droit",
+        "type_membre","suspended_reason",
+      ];
+      const patch: Record<string, unknown> = { id: editData.id };
+      for (const k of allowed) if (k in editData) patch[k] = editData[k];
+      await updateMemberSafe({ data: patch as any });
+      toast.success("Membre mis à jour");
+      setEditOpen(false);
+      loadMembers();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de la mise à jour");
+    }
   }
 
   const repartition = useMemo(() => {
