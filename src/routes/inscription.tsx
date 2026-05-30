@@ -189,6 +189,10 @@ function Page() {
       } else {
         toast.error("Veuillez vérifier le formulaire.");
       }
+      return false;
+    }
+  }
+
   async function submit() {
     if (!validateStep()) return;
     if (!data.consentReglement || !data.consentPrelevement || !data.consentConfidentialite) {
