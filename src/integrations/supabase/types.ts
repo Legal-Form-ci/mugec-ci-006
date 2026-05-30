@@ -1478,6 +1478,10 @@ export type Database = {
         Args: { _date_inscription?: string; _type: string }
         Returns: number
       }
+      can_manage_member_financials: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       can_manage_payments: { Args: { _user_id: string }; Returns: boolean }
       current_user_dashboard_path: { Args: never; Returns: string }
       dashboard_path_for: { Args: { _user_id: string }; Returns: string }
