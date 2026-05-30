@@ -14,32 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string | null
+          motif: string | null
+          notes_admin: string | null
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          statut: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          motif?: string | null
+          notes_admin?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          statut?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          motif?: string | null
+          notes_admin?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          statut?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      app_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          description: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: Json
+          description?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          description?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
+          after_data: Json | null
+          before_data: Json | null
           created_at: string
           entity: string | null
           entity_id: string | null
           id: string
+          ip_address: string | null
           metadata: Json | null
+          severity: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
+          after_data?: Json | null
+          before_data?: Json | null
           created_at?: string
           entity?: string | null
           entity_id?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
+          severity?: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
+          after_data?: Json | null
+          before_data?: Json | null
           created_at?: string
           entity?: string | null
           entity_id?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
+          severity?: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -370,6 +451,45 @@ export type Database = {
           },
         ]
       }
+      member_imports: {
+        Row: {
+          created_at: string
+          error_rows: number
+          file_name: string
+          id: string
+          ok_rows: number
+          report: Json
+          status: string
+          total_rows: number
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          error_rows?: number
+          file_name: string
+          id?: string
+          ok_rows?: number
+          report?: Json
+          status?: string
+          total_rows?: number
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          error_rows?: number
+          file_name?: string
+          id?: string
+          ok_rows?: number
+          report?: Json
+          status?: string
+          total_rows?: number
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           adresse: string | null
@@ -404,6 +524,8 @@ export type Database = {
           prenoms: string
           qr_code: string | null
           region: string | null
+          rgpd_consent_at: string | null
+          rgpd_consent_version: string | null
           sexe: string | null
           source: string
           statut: string
@@ -448,6 +570,8 @@ export type Database = {
           prenoms: string
           qr_code?: string | null
           region?: string | null
+          rgpd_consent_at?: string | null
+          rgpd_consent_version?: string | null
           sexe?: string | null
           source?: string
           statut?: string
@@ -492,6 +616,8 @@ export type Database = {
           prenoms?: string
           qr_code?: string | null
           region?: string | null
+          rgpd_consent_at?: string | null
+          rgpd_consent_version?: string | null
           sexe?: string | null
           source?: string
           statut?: string
@@ -535,6 +661,93 @@ export type Database = {
           published?: boolean
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_provider_settings: {
+        Row: {
+          api_key_ref: string
+          enabled: boolean
+          extras: Json
+          id: string
+          provider: string
+          sender_email: string | null
+          sender_name: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          api_key_ref?: string
+          enabled?: boolean
+          extras?: Json
+          id?: string
+          provider: string
+          sender_email?: string | null
+          sender_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          api_key_ref?: string
+          enabled?: boolean
+          extras?: Json
+          id?: string
+          provider?: string
+          sender_email?: string | null
+          sender_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      notification_queue: {
+        Row: {
+          attempts: number
+          canal: string
+          created_at: string
+          event: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          member_id: string | null
+          payload: Json
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          canal: string
+          created_at?: string
+          event: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          member_id?: string | null
+          payload?: Json
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          canal?: string
+          created_at?: string
+          event?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          member_id?: string | null
+          payload?: Json
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -765,11 +978,62 @@ export type Database = {
           },
         ]
       }
+      prestation_attachments: {
+        Row: {
+          category: string
+          created_at: string
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          notes: string | null
+          request_id: string
+          size_bytes: number | null
+          uploaded_by: string
+          uploaded_role: string
+          url: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          request_id: string
+          size_bytes?: number | null
+          uploaded_by: string
+          uploaded_role?: string
+          url: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          request_id?: string
+          size_bytes?: number | null
+          uploaded_by?: string
+          uploaded_role?: string
+          url?: string
+        }
+        Relationships: []
+      }
       prestation_requests: {
         Row: {
+          admin_modified_at: string | null
+          admin_modified_by: string | null
+          admin_notes: string | null
+          beneficiaire_nom: string | null
+          beneficiaire_prenoms: string | null
+          beneficiaire_type: string
           closed_at: string | null
           created_at: string
+          date_evenement: string | null
+          description_membre: string | null
           id: string
+          lieu_evenement: string | null
           member_id: string
           montant_applicable: number
           motif_rejet: string | null
@@ -779,11 +1043,21 @@ export type Database = {
           submitted_at: string
           type_evenement: string
           updated_at: string
+          visibilite: string
         }
         Insert: {
+          admin_modified_at?: string | null
+          admin_modified_by?: string | null
+          admin_notes?: string | null
+          beneficiaire_nom?: string | null
+          beneficiaire_prenoms?: string | null
+          beneficiaire_type?: string
           closed_at?: string | null
           created_at?: string
+          date_evenement?: string | null
+          description_membre?: string | null
           id?: string
+          lieu_evenement?: string | null
           member_id: string
           montant_applicable?: number
           motif_rejet?: string | null
@@ -793,11 +1067,21 @@ export type Database = {
           submitted_at?: string
           type_evenement: string
           updated_at?: string
+          visibilite?: string
         }
         Update: {
+          admin_modified_at?: string | null
+          admin_modified_by?: string | null
+          admin_notes?: string | null
+          beneficiaire_nom?: string | null
+          beneficiaire_prenoms?: string | null
+          beneficiaire_type?: string
           closed_at?: string | null
           created_at?: string
+          date_evenement?: string | null
+          description_membre?: string | null
           id?: string
+          lieu_evenement?: string | null
           member_id?: string
           montant_applicable?: number
           motif_rejet?: string | null
@@ -807,6 +1091,7 @@ export type Database = {
           submitted_at?: string
           type_evenement?: string
           updated_at?: string
+          visibilite?: string
         }
         Relationships: [
           {
@@ -862,6 +1147,30 @@ export type Database = {
           },
         ]
       }
+      rate_limit_counters: {
+        Row: {
+          bucket_key: string
+          created_at: string
+          hits: number
+          id: string
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          created_at?: string
+          hits?: number
+          id?: string
+          window_start: string
+        }
+        Update: {
+          bucket_key?: string
+          created_at?: string
+          hits?: number
+          id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       registration_drafts: {
         Row: {
           created_at: string
@@ -907,6 +1216,48 @@ export type Database = {
           telephone?: string | null
           updated_at?: string
           uploaded_documents?: Json
+        }
+        Relationships: []
+      }
+      sensitive_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          details: Json
+          id: string
+          ip: string | null
+          occurred_at: string
+          scope: string
+          target_id: string | null
+          target_label: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          details?: Json
+          id?: string
+          ip?: string | null
+          occurred_at?: string
+          scope: string
+          target_id?: string | null
+          target_label?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          details?: Json
+          id?: string
+          ip?: string | null
+          occurred_at?: string
+          scope?: string
+          target_id?: string | null
+          target_label?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -1131,6 +1482,7 @@ export type Database = {
       current_user_dashboard_path: { Args: never; Returns: string }
       dashboard_path_for: { Args: { _user_id: string }; Returns: string }
       dashboard_sync_health: { Args: never; Returns: Json }
+      enqueue_overdue_cotisation_reminders: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1140,6 +1492,16 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_sensitive_event: {
+        Args: {
+          _action: string
+          _details: Json
+          _scope: string
+          _target_id: string
+          _target_label: string
+        }
+        Returns: undefined
+      }
       lookup_member_email_by_phone: {
         Args: { p_phone: string }
         Returns: string
@@ -1154,9 +1516,18 @@ export type Database = {
       validate_prestation_step: {
         Args: { _action: string; _motif?: string; _request_id: string }
         Returns: {
+          admin_modified_at: string | null
+          admin_modified_by: string | null
+          admin_notes: string | null
+          beneficiaire_nom: string | null
+          beneficiaire_prenoms: string | null
+          beneficiaire_type: string
           closed_at: string | null
           created_at: string
+          date_evenement: string | null
+          description_membre: string | null
           id: string
+          lieu_evenement: string | null
           member_id: string
           montant_applicable: number
           motif_rejet: string | null
@@ -1166,6 +1537,7 @@ export type Database = {
           submitted_at: string
           type_evenement: string
           updated_at: string
+          visibilite: string
         }
         SetofOptions: {
           from: "*"
