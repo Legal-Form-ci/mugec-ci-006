@@ -1483,6 +1483,10 @@ export type Database = {
         Returns: boolean
       }
       can_manage_payments: { Args: { _user_id: string }; Returns: boolean }
+      consume_rate_limit: {
+        Args: { _bucket_key: string; _limit: number; _window_seconds: number }
+        Returns: Json
+      }
       current_user_dashboard_path: { Args: never; Returns: string }
       dashboard_path_for: { Args: { _user_id: string }; Returns: string }
       dashboard_sync_health: { Args: never; Returns: Json }
@@ -1515,8 +1519,6 @@ export type Database = {
       open_member_rights_after_90_days: { Args: never; Returns: number }
       resolve_login_email: { Args: { p_identifier: string }; Returns: string }
       role_for_prestation_step: { Args: { _step: number }; Returns: string }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       validate_prestation_step: {
         Args: { _action: string; _motif?: string; _request_id: string }
         Returns: {
