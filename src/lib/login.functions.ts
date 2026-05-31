@@ -49,7 +49,13 @@ export const loginWithIdentifier = createServerFn({ method: "POST" })
     });
     if (signInErr || !signIn.session || !signIn.user) return generic;
 
-    const { data: rawPath, error: pathError } = await authClient.rpc("current_user_dashboard_path");
+    // Recrée un client porteur du JWT pour que current_user_dashboard_path()
+    // évalue auth.uid() correctement (sinon il retombe sur /membre).
+    const userClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: { Authorization: `Bearer ${signIn.session.access_token}` } },
+      auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+    });
+    const { data: rawPath, error: pathError } = await userClient.rpc("current_user_dashboard_path");
     if (pathError || typeof rawPath !== "string" || rawPath.length === 0) {
       return generic;
     }
