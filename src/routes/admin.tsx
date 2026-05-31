@@ -56,11 +56,12 @@ function AdminGate() {
         .select("role")
         .eq("user_id", user.id);
       const roleList = (roles ?? []).map((r) => String(r.role));
-      if (roleList.includes("super_admin")) {
-        navigate({ to: "/miprojet", replace: true });
-        return;
-      }
-      setState(roleList.some((role) => MUGEC_ADMIN_ROLES.has(role)) ? "ready" : "login");
+      // super_admin MIPROJET a accès complet à l'admin MUGEC-CI (bascule depuis MIPROJET).
+      // On NE redirige PAS automatiquement vers /miprojet sinon le bouton "Basculer MUGEC-CI" boucle.
+      const hasMugecAccess =
+        roleList.includes("super_admin") ||
+        roleList.some((role) => MUGEC_ADMIN_ROLES.has(role));
+      setState(hasMugecAccess ? "ready" : "login");
     })();
     return () => {
       alive = false;
