@@ -79,7 +79,6 @@ function MiprojetGate() {
         Vérification MIPROJET…
       </div>
     );
-  const loc = useLocation();
   if (state === "ready") {
     // Routes enfants (/miprojet/utilisateurs, etc.) → rendre l'Outlet.
     if (loc.pathname !== "/miprojet") {
