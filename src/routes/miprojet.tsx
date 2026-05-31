@@ -26,6 +26,7 @@ function MiprojetGate() {
   const [loading, setLoading] = useState(false);
   const doLogin = useServerFn(loginWithIdentifier);
   const navigate = useNavigate();
+  const loc = useLocation();
 
   useEffect(() => {
     let alive = true;
