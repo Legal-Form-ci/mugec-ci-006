@@ -78,7 +78,12 @@ function MiprojetGate() {
         Vérification MIPROJET…
       </div>
     );
-  if (state === "ready")
+  const loc = useLocation();
+  if (state === "ready") {
+    // Routes enfants (/miprojet/utilisateurs, etc.) → rendre l'Outlet.
+    if (loc.pathname !== "/miprojet") {
+      return <Outlet />;
+    }
     return (
       <Suspense
         fallback={
@@ -90,6 +95,7 @@ function MiprojetGate() {
         <MiProjetDashboard />
       </Suspense>
     );
+  }
 
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4">
