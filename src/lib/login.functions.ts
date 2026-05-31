@@ -60,16 +60,22 @@ export const loginWithIdentifier = createServerFn({ method: "POST" })
       return generic;
     }
 
-    if (data.portal === "member" && rawPath !== "/membre") return generic;
-    if (data.portal === "admin" && rawPath !== "/admin") return generic;
-    if (data.portal === "miprojet" && rawPath !== "/admin/miprojet") return generic;
-
     const dashboard_path = rawPath === "/admin/miprojet" ? "/miprojet" : rawPath;
+
+    // Portal guidance (non bloquant) :
+    // on accepte la connexion si les identifiants sont bons, et on laisse
+    // le client rediriger vers le bon dashboard (évite les blocages quand
+    // un compte cumule plusieurs rôles).
+    const portal_match =
+      (data.portal === "member" && dashboard_path === "/membre") ||
+      (data.portal === "admin" && dashboard_path === "/admin") ||
+      (data.portal === "miprojet" && dashboard_path === "/miprojet");
 
     return {
       ok: true as const,
       access_token: signIn.session.access_token,
       refresh_token: signIn.session.refresh_token,
       dashboard_path,
+      portal_match,
     };
   });
