@@ -635,30 +635,51 @@ export type Database = {
         Row: {
           author_id: string | null
           body: string
+          category: string | null
           cover_url: string | null
           created_at: string
           id: string
+          illustrations: Json
+          meta_description: string | null
+          meta_title: string | null
           published: boolean
+          slug: string | null
+          summary: string | null
+          tags: string[]
           title: string
           updated_at: string
         }
         Insert: {
           author_id?: string | null
           body: string
+          category?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string
+          illustrations?: Json
+          meta_description?: string | null
+          meta_title?: string | null
           published?: boolean
+          slug?: string | null
+          summary?: string | null
+          tags?: string[]
           title: string
           updated_at?: string
         }
         Update: {
           author_id?: string | null
           body?: string
+          category?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string
+          illustrations?: Json
+          meta_description?: string | null
+          meta_title?: string | null
           published?: boolean
+          slug?: string | null
+          summary?: string | null
+          tags?: string[]
           title?: string
           updated_at?: string
         }
@@ -869,34 +890,61 @@ export type Database = {
       }
       opportunites: {
         Row: {
+          body: string | null
+          category: string | null
+          cover_url: string | null
           created_at: string
           date_limite: string | null
           description: string
           id: string
+          illustrations: Json
           lieu: string | null
+          meta_description: string | null
+          meta_title: string | null
           published: boolean
+          slug: string | null
+          summary: string | null
+          tags: string[]
           title: string
           type: string | null
           updated_at: string
         }
         Insert: {
+          body?: string | null
+          category?: string | null
+          cover_url?: string | null
           created_at?: string
           date_limite?: string | null
           description: string
           id?: string
+          illustrations?: Json
           lieu?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           published?: boolean
+          slug?: string | null
+          summary?: string | null
+          tags?: string[]
           title: string
           type?: string | null
           updated_at?: string
         }
         Update: {
+          body?: string | null
+          category?: string | null
+          cover_url?: string | null
           created_at?: string
           date_limite?: string | null
           description?: string
           id?: string
+          illustrations?: Json
           lieu?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           published?: boolean
+          slug?: string | null
+          summary?: string | null
+          tags?: string[]
           title?: string
           type?: string | null
           updated_at?: string
