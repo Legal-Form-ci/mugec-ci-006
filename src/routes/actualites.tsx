@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,27 +29,32 @@ function Page() {
         <div className="mt-10">
           {loading ? <CardListSkeleton count={4} /> :
            items.length === 0 ? <div className="text-muted-foreground">Aucune actualité publiée.</div> :
-           <div className="space-y-4">{items.map((n, idx) => (
-            <Card key={n.id} className="overflow-hidden">
-              {n.cover_url && (
-                <OptimizedImage
-                  src={n.cover_url}
-                  alt={n.title}
-                  aspect="16/6"
-                  priority={idx === 0}
-                  containerClassName="rounded-t-lg"
-                />
-              )}
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2">
-                  <div className="text-xs font-medium uppercase text-accent">{new Date(n.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>
-                  {n.category && <Badge variant="outline">{n.category}</Badge>}
-                </div>
-                <h2 className="mt-1 text-xl font-semibold">{n.title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{n.summary || (n.body ? n.body.replace(/<[^>]+>/g, "").slice(0, 200) + "…" : "")}</p>
-              </CardContent>
-            </Card>
-          ))}</div>}
+           <div className="space-y-4">{items.map((n, idx) => {
+            const card = (
+              <Card className="overflow-hidden transition hover:shadow-md">
+                {n.cover_url && (
+                  <OptimizedImage
+                    src={n.cover_url}
+                    alt={n.title}
+                    aspect="16/6"
+                    priority={idx === 0}
+                    containerClassName="rounded-t-lg"
+                  />
+                )}
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs font-medium uppercase text-accent">{new Date(n.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>
+                    {n.category && <Badge variant="outline">{n.category}</Badge>}
+                  </div>
+                  <h2 className="mt-1 text-xl font-semibold">{n.title}</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">{n.summary || (n.body ? n.body.replace(/<[^>]+>/g, "").slice(0, 200) + "…" : "")}</p>
+                </CardContent>
+              </Card>
+            );
+            return n.slug
+              ? <Link key={n.id} to="/actualites/$slug" params={{ slug: n.slug }} className="block">{card}</Link>
+              : <div key={n.id}>{card}</div>;
+          })}</div>}
         </div>
       </section>
       <SiteFooter />

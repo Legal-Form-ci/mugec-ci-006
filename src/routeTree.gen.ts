@@ -26,6 +26,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MembreIndexRouteImport } from './routes/membre/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as VerifierMatriculeRouteImport } from './routes/verifier.$matricule'
+import { Route as OpportunitesSlugRouteImport } from './routes/opportunites.$slug'
 import { Route as MiprojetUtilisateursRouteImport } from './routes/miprojet.utilisateurs'
 import { Route as MembreProfilRouteImport } from './routes/membre/profil'
 import { Route as MembrePrestationsRouteImport } from './routes/membre/prestations'
@@ -41,6 +42,7 @@ import { Route as AdminMembresRouteImport } from './routes/admin/membres'
 import { Route as AdminDroitsAdhesionRouteImport } from './routes/admin/droits-adhesion'
 import { Route as AdminCotisationsRouteImport } from './routes/admin/cotisations'
 import { Route as AdminActualitesRouteImport } from './routes/admin/actualites'
+import { Route as ActualitesSlugRouteImport } from './routes/actualites.$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -127,6 +129,11 @@ const VerifierMatriculeRoute = VerifierMatriculeRouteImport.update({
   path: '/verifier/$matricule',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpportunitesSlugRoute = OpportunitesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => OpportunitesRoute,
+} as any)
 const MiprojetUtilisateursRoute = MiprojetUtilisateursRouteImport.update({
   id: '/utilisateurs',
   path: '/utilisateurs',
@@ -202,10 +209,15 @@ const AdminActualitesRoute = AdminActualitesRouteImport.update({
   path: '/actualites',
   getParentRoute: () => AdminRoute,
 } as any)
+const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ActualitesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -214,10 +226,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/membre': typeof MembreRouteWithChildren
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -233,23 +246,25 @@ export interface FileRoutesByFullPath {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin/': typeof AdminIndexRoute
   '/membre/': typeof MembreIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/forum': typeof ForumRoute
   '/inscription': typeof InscriptionRoute
   '/login': typeof LoginRoute
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -265,6 +280,7 @@ export interface FileRoutesByTo {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin': typeof AdminIndexRoute
   '/membre': typeof MembreIndexRoute
@@ -272,7 +288,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -281,10 +297,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/membre': typeof MembreRouteWithChildren
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -300,6 +317,7 @@ export interface FileRoutesById {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin/': typeof AdminIndexRoute
   '/membre/': typeof MembreIndexRoute
@@ -321,6 +339,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -336,6 +355,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin/'
     | '/membre/'
@@ -353,6 +373,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -368,6 +389,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin'
     | '/membre'
@@ -387,6 +409,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -402,6 +425,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin/'
     | '/membre/'
@@ -409,7 +433,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ActualitesRoute: typeof ActualitesRoute
+  ActualitesRoute: typeof ActualitesRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -418,7 +442,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MembreRoute: typeof MembreRouteWithChildren
   MiprojetRoute: typeof MiprojetRouteWithChildren
-  OpportunitesRoute: typeof OpportunitesRoute
+  OpportunitesRoute: typeof OpportunitesRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScannerRoute: typeof ScannerRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -546,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifierMatriculeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/opportunites/$slug': {
+      id: '/opportunites/$slug'
+      path: '/$slug'
+      fullPath: '/opportunites/$slug'
+      preLoaderRoute: typeof OpportunitesSlugRouteImport
+      parentRoute: typeof OpportunitesRoute
+    }
     '/miprojet/utilisateurs': {
       id: '/miprojet/utilisateurs'
       path: '/utilisateurs'
@@ -651,8 +682,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminActualitesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/actualites/$slug': {
+      id: '/actualites/$slug'
+      path: '/$slug'
+      fullPath: '/actualites/$slug'
+      preLoaderRoute: typeof ActualitesSlugRouteImport
+      parentRoute: typeof ActualitesRoute
+    }
   }
 }
+
+interface ActualitesRouteChildren {
+  ActualitesSlugRoute: typeof ActualitesSlugRoute
+}
+
+const ActualitesRouteChildren: ActualitesRouteChildren = {
+  ActualitesSlugRoute: ActualitesSlugRoute,
+}
+
+const ActualitesRouteWithChildren = ActualitesRoute._addFileChildren(
+  ActualitesRouteChildren,
+)
 
 interface AdminRouteChildren {
   AdminActualitesRoute: typeof AdminActualitesRoute
@@ -715,9 +765,21 @@ const MiprojetRouteWithChildren = MiprojetRoute._addFileChildren(
   MiprojetRouteChildren,
 )
 
+interface OpportunitesRouteChildren {
+  OpportunitesSlugRoute: typeof OpportunitesSlugRoute
+}
+
+const OpportunitesRouteChildren: OpportunitesRouteChildren = {
+  OpportunitesSlugRoute: OpportunitesSlugRoute,
+}
+
+const OpportunitesRouteWithChildren = OpportunitesRoute._addFileChildren(
+  OpportunitesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ActualitesRoute: ActualitesRoute,
+  ActualitesRoute: ActualitesRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
@@ -726,7 +788,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MembreRoute: MembreRouteWithChildren,
   MiprojetRoute: MiprojetRouteWithChildren,
-  OpportunitesRoute: OpportunitesRoute,
+  OpportunitesRoute: OpportunitesRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   ScannerRoute: ScannerRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
