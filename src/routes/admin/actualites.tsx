@@ -87,7 +87,7 @@ function ActualitesPage() {
           illus = illusRes.urls;
         }
       }
-      setCurrent({
+      const draft: Article = {
         ...EMPTY,
         title: article.title,
         slug: article.slug,
@@ -100,11 +100,15 @@ function ActualitesPage() {
         meta_title: article.meta_title,
         meta_description: article.meta_description,
         published: false,
-      });
+      };
+      // Auto-save le brouillon pour qu'il apparaisse immédiatement dans la liste admin.
+      const saved = await save({ data: { ...(draft as any), id: undefined } });
+      setCurrent({ ...draft, id: saved?.id ?? "" });
       setGenOpen(false);
       setEditorOpen(true);
       setTopic("");
-      toast.success("Brouillon généré — relisez puis publiez.");
+      await load();
+      toast.success("Brouillon généré et enregistré — relisez puis activez la publication.");
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
     } finally {
