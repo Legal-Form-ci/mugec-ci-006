@@ -41,6 +41,7 @@ import { Route as AdminMembresRouteImport } from './routes/admin/membres'
 import { Route as AdminDroitsAdhesionRouteImport } from './routes/admin/droits-adhesion'
 import { Route as AdminCotisationsRouteImport } from './routes/admin/cotisations'
 import { Route as AdminActualitesRouteImport } from './routes/admin/actualites'
+import { Route as ActualitesSlugRouteImport } from './routes/actualites.$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -202,10 +203,15 @@ const AdminActualitesRoute = AdminActualitesRouteImport.update({
   path: '/actualites',
   getParentRoute: () => AdminRoute,
 } as any)
+const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ActualitesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -239,7 +246,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/forum': typeof ForumRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -272,7 +280,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/actualites': typeof ActualitesRoute
+  '/actualites': typeof ActualitesRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin/actualites': typeof AdminActualitesRoute
   '/admin/cotisations': typeof AdminCotisationsRoute
   '/admin/droits-adhesion': typeof AdminDroitsAdhesionRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/scanner'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/admin/actualites'
     | '/admin/cotisations'
     | '/admin/droits-adhesion'
@@ -409,7 +421,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ActualitesRoute: typeof ActualitesRoute
+  ActualitesRoute: typeof ActualitesRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -651,8 +663,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminActualitesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/actualites/$slug': {
+      id: '/actualites/$slug'
+      path: '/$slug'
+      fullPath: '/actualites/$slug'
+      preLoaderRoute: typeof ActualitesSlugRouteImport
+      parentRoute: typeof ActualitesRoute
+    }
   }
 }
+
+interface ActualitesRouteChildren {
+  ActualitesSlugRoute: typeof ActualitesSlugRoute
+}
+
+const ActualitesRouteChildren: ActualitesRouteChildren = {
+  ActualitesSlugRoute: ActualitesSlugRoute,
+}
+
+const ActualitesRouteWithChildren = ActualitesRoute._addFileChildren(
+  ActualitesRouteChildren,
+)
 
 interface AdminRouteChildren {
   AdminActualitesRoute: typeof AdminActualitesRoute
@@ -717,7 +748,7 @@ const MiprojetRouteWithChildren = MiprojetRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ActualitesRoute: ActualitesRoute,
+  ActualitesRoute: ActualitesRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
