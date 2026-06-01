@@ -26,6 +26,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MembreIndexRouteImport } from './routes/membre/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as VerifierMatriculeRouteImport } from './routes/verifier.$matricule'
+import { Route as OpportunitesSlugRouteImport } from './routes/opportunites.$slug'
 import { Route as MiprojetUtilisateursRouteImport } from './routes/miprojet.utilisateurs'
 import { Route as MembreProfilRouteImport } from './routes/membre/profil'
 import { Route as MembrePrestationsRouteImport } from './routes/membre/prestations'
@@ -128,6 +129,11 @@ const VerifierMatriculeRoute = VerifierMatriculeRouteImport.update({
   path: '/verifier/$matricule',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpportunitesSlugRoute = OpportunitesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => OpportunitesRoute,
+} as any)
 const MiprojetUtilisateursRoute = MiprojetUtilisateursRouteImport.update({
   id: '/utilisateurs',
   path: '/utilisateurs',
@@ -220,7 +226,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/membre': typeof MembreRouteWithChildren
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin/': typeof AdminIndexRoute
   '/membre/': typeof MembreIndexRoute
@@ -253,7 +260,7 @@ export interface FileRoutesByTo {
   '/inscription': typeof InscriptionRoute
   '/login': typeof LoginRoute
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByTo {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin': typeof AdminIndexRoute
   '/membre': typeof MembreIndexRoute
@@ -289,7 +297,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/membre': typeof MembreRouteWithChildren
   '/miprojet': typeof MiprojetRouteWithChildren
-  '/opportunites': typeof OpportunitesRoute
+  '/opportunites': typeof OpportunitesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/membre/prestations': typeof MembrePrestationsRoute
   '/membre/profil': typeof MembreProfilRoute
   '/miprojet/utilisateurs': typeof MiprojetUtilisateursRoute
+  '/opportunites/$slug': typeof OpportunitesSlugRoute
   '/verifier/$matricule': typeof VerifierMatriculeRoute
   '/admin/': typeof AdminIndexRoute
   '/membre/': typeof MembreIndexRoute
@@ -346,6 +355,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin/'
     | '/membre/'
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin'
     | '/membre'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/membre/prestations'
     | '/membre/profil'
     | '/miprojet/utilisateurs'
+    | '/opportunites/$slug'
     | '/verifier/$matricule'
     | '/admin/'
     | '/membre/'
@@ -430,7 +442,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MembreRoute: typeof MembreRouteWithChildren
   MiprojetRoute: typeof MiprojetRouteWithChildren
-  OpportunitesRoute: typeof OpportunitesRoute
+  OpportunitesRoute: typeof OpportunitesRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScannerRoute: typeof ScannerRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -557,6 +569,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verifier/$matricule'
       preLoaderRoute: typeof VerifierMatriculeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/opportunites/$slug': {
+      id: '/opportunites/$slug'
+      path: '/$slug'
+      fullPath: '/opportunites/$slug'
+      preLoaderRoute: typeof OpportunitesSlugRouteImport
+      parentRoute: typeof OpportunitesRoute
     }
     '/miprojet/utilisateurs': {
       id: '/miprojet/utilisateurs'
@@ -746,6 +765,18 @@ const MiprojetRouteWithChildren = MiprojetRoute._addFileChildren(
   MiprojetRouteChildren,
 )
 
+interface OpportunitesRouteChildren {
+  OpportunitesSlugRoute: typeof OpportunitesSlugRoute
+}
+
+const OpportunitesRouteChildren: OpportunitesRouteChildren = {
+  OpportunitesSlugRoute: OpportunitesSlugRoute,
+}
+
+const OpportunitesRouteWithChildren = OpportunitesRoute._addFileChildren(
+  OpportunitesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActualitesRoute: ActualitesRouteWithChildren,
@@ -757,7 +788,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MembreRoute: MembreRouteWithChildren,
   MiprojetRoute: MiprojetRouteWithChildren,
-  OpportunitesRoute: OpportunitesRoute,
+  OpportunitesRoute: OpportunitesRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   ScannerRoute: ScannerRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
