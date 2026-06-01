@@ -14,7 +14,7 @@ function Page() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    (supabase as any).from("opportunites").select("id, title, summary, description, type, lieu, date_limite, cover_url")
+    (supabase as any).from("opportunites").select("id, title, slug, summary, description, type, lieu, date_limite, cover_url")
       .eq("published", true).order("created_at", { ascending: false }).limit(50)
       .then(({ data }: any) => { setItems(data ?? []); setLoading(false); });
   }, []);
@@ -29,18 +29,23 @@ function Page() {
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           {loading ? <div className="text-muted-foreground">Chargement…</div> :
            items.length === 0 ? <div className="text-muted-foreground">Aucune opportunité publiée.</div> :
-           items.map((i) => (
-            <Card key={i.id}>
-              {i.cover_url && <img src={i.cover_url} alt={i.title} className="h-40 w-full object-cover rounded-t-lg" />}
-              <CardContent className="p-6">
-                {i.type && <Badge variant="secondary">{i.type}</Badge>}
-                <h2 className="mt-3 text-lg font-semibold">{i.title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{i.summary || i.description?.slice(0, 200)}</p>
-                {i.date_limite && <p className="mt-2 text-xs">Date limite : <strong>{new Date(i.date_limite).toLocaleDateString("fr-FR")}</strong></p>}
-                {i.lieu && <p className="text-xs text-muted-foreground">Lieu : {i.lieu}</p>}
-              </CardContent>
-            </Card>
-          ))}
+           items.map((i) => {
+             const inner = (
+               <Card className="h-full transition hover:shadow-md">
+                 {i.cover_url && <img src={i.cover_url} alt={i.title} className="h-40 w-full object-cover rounded-t-lg" />}
+                 <CardContent className="p-6">
+                   {i.type && <Badge variant="secondary">{i.type}</Badge>}
+                   <h2 className="mt-3 text-lg font-semibold">{i.title}</h2>
+                   <p className="mt-2 text-sm text-muted-foreground">{i.summary || i.description?.slice(0, 200)}</p>
+                   {i.date_limite && <p className="mt-2 text-xs">Date limite : <strong>{new Date(i.date_limite).toLocaleDateString("fr-FR")}</strong></p>}
+                   {i.lieu && <p className="text-xs text-muted-foreground">Lieu : {i.lieu}</p>}
+                 </CardContent>
+               </Card>
+             );
+             return i.slug
+               ? <Link key={i.id} to="/opportunites/$slug" params={{ slug: i.slug }} className="block">{inner}</Link>
+               : <div key={i.id}>{inner}</div>;
+           })}
         </div>
       </section>
       <SiteFooter />
