@@ -26,6 +26,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
