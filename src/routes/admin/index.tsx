@@ -210,12 +210,12 @@ function AdminDashboard() {
           />
           <PremiumKPI
             icon={Wallet} label="Cotisations mois"
-            value={`${((stats?.cotisations_mois ?? 0) / 1000).toFixed(0)}k F`}
+            value={formatCFA(stats?.cotisations_mois)}
             gradient="from-purple-500 to-pink-600" trend="+24%"
           />
           <PremiumKPI
             icon={Wallet} label="Cotisations cumul"
-            value={`${((stats?.cotisations_total ?? 0) / 1000).toFixed(0)}k F`}
+            value={formatCFA(stats?.cotisations_total)}
             gradient="from-cyan-500 to-blue-600"
           />
           <PremiumKPI
