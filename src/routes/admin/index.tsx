@@ -239,11 +239,11 @@ function AdminDashboard() {
             <CardHeader className="pb-2">
               <CardDescription>Droits d'adhésion</CardDescription>
               <CardTitle className="text-2xl tabular-nums">
-                {((stats?.droits_adhesion_total ?? 0) / 1000).toFixed(0)} k F
+                {formatCFA(stats?.droits_adhesion_total)}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground">
-              Ce mois&nbsp;: <span className="font-semibold text-foreground">{((stats?.droits_adhesion_mois ?? 0) / 1000).toFixed(0)} k F</span>
+              Ce mois&nbsp;: <span className="font-semibold text-foreground">{formatCFA(stats?.droits_adhesion_mois)}</span>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-md overflow-hidden">
@@ -251,11 +251,11 @@ function AdminDashboard() {
             <CardHeader className="pb-2">
               <CardDescription>Cotisations</CardDescription>
               <CardTitle className="text-2xl tabular-nums">
-                {((stats?.cotisations_total ?? 0) / 1000).toFixed(0)} k F
+                {formatCFA(stats?.cotisations_total)}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground">
-              Ce mois&nbsp;: <span className="font-semibold text-foreground">{((stats?.cotisations_mois ?? 0) / 1000).toFixed(0)} k F</span>
+              Ce mois&nbsp;: <span className="font-semibold text-foreground">{formatCFA(stats?.cotisations_mois)}</span>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-md overflow-hidden">
@@ -263,11 +263,11 @@ function AdminDashboard() {
             <CardHeader className="pb-2">
               <CardDescription>Revenus globaux</CardDescription>
               <CardTitle className="text-2xl tabular-nums">
-                {(((stats?.revenus_total ?? ((stats?.droits_adhesion_total ?? 0) + (stats?.cotisations_total ?? 0)))) / 1000).toFixed(0)} k F
+                {formatCFA(stats?.revenus_total ?? ((stats?.droits_adhesion_total ?? 0) + (stats?.cotisations_total ?? 0)))}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground">
-              Ce mois&nbsp;: <span className="font-semibold text-foreground">{(((stats?.revenus_mois ?? ((stats?.droits_adhesion_mois ?? 0) + (stats?.cotisations_mois ?? 0)))) / 1000).toFixed(0)} k F</span>
+              Ce mois&nbsp;: <span className="font-semibold text-foreground">{formatCFA(stats?.revenus_mois ?? ((stats?.droits_adhesion_mois ?? 0) + (stats?.cotisations_mois ?? 0)))}</span>
             </CardContent>
           </Card>
         </section>
