@@ -75,16 +75,19 @@ function OpportunitesAdmin() {
           illus = i.urls;
         }
       }
-      setCurrent({
+      const draft: Opp = {
         ...EMPTY,
         title: article.title, slug: article.slug, summary: article.summary,
         description: article.summary || article.title, body: article.body,
         cover_url: cover, illustrations: illus, category: article.category, type: article.category,
         tags: article.tags, meta_title: article.meta_title, meta_description: article.meta_description,
         published: false,
-      });
+      };
+      const saved = await save({ data: { ...(draft as any), id: undefined } });
+      setCurrent({ ...draft, id: saved?.id ?? "" });
       setGenOpen(false); setEditorOpen(true); setTopic("");
-      toast.success("Brouillon généré — relisez puis publiez.");
+      await load();
+      toast.success("Brouillon généré et enregistré — relisez puis activez la publication.");
     } catch (e: any) { toast.error(e?.message ?? "Erreur"); }
     finally { setGenerating(false); }
   }
