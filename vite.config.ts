@@ -5,6 +5,12 @@ import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
+// Use Nitro Vercel preset ONLY when building for Vercel.
+// Lovable (Cloudflare Workers) publish needs the default tanstackStart
+// Cloudflare Worker output — adding the nitro plugin overrides it and
+// causes "Publishing failed".
+const isVercelBuild = !!process.env.VERCEL || process.env.LOVABLE_TARGET === "vercel";
+
 export default defineConfig(({ mode }) => {
   const loadedEnv = loadEnv(mode, process.cwd(), "VITE_");
   const envDefine = Object.fromEntries(
@@ -35,7 +41,7 @@ export default defineConfig(({ mode }) => {
         },
         server: { entry: "server" },
       }),
-      nitro({ preset: "vercel" }),
+      ...(isVercelBuild ? [nitro({ preset: "vercel" })] : []),
       viteReact(),
     ],
   };
