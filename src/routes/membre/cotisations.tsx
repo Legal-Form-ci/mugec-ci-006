@@ -25,6 +25,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/membre/cotisations")({ component: Page });
 
@@ -127,7 +128,7 @@ function Page() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total cotisé"
-          value={`${stats.total.toLocaleString("fr-FR")} F`}
+          value={formatCFA(stats.total)}
           icon={Wallet}
           tone="primary"
         />
@@ -135,7 +136,7 @@ function Page() {
         <StatCard label="En attente" value={String(stats.pending)} icon={Clock} tone="warning" />
         <StatCard
           label="Montant en attente"
-          value={`${stats.pendingAmount.toLocaleString("fr-FR")} F`}
+          value={formatCFA(stats.pendingAmount)}
           icon={TrendingUp}
           tone="muted"
         />
@@ -156,7 +157,7 @@ function Page() {
                 <YAxis
                   stroke="var(--color-muted-foreground)"
                   fontSize={11}
-                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                  tickFormatter={(v) => formatCFA(v)}
                 />
                 <Tooltip
                   cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
@@ -166,7 +167,7 @@ function Page() {
                     borderRadius: 8,
                     fontSize: 12,
                   }}
-                  formatter={(v: number) => [`${v.toLocaleString("fr-FR")} F`, "Montant"]}
+                  formatter={(v: number) => [formatCFA(v), "Montant"]}
                 />
                 <Bar dataKey="montant" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -238,7 +239,7 @@ function Page() {
                         <td className="px-4 py-3 font-medium capitalize">{r.type}</td>
                         <td className="px-4 py-3 text-muted-foreground">{r.periode ?? "—"}</td>
                         <td className="px-4 py-3 font-semibold tabular-nums">
-                          {(r.montant_total ?? 0).toLocaleString("fr-FR")} F
+                          {formatCFA(r.montant_total)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{r.operateur ?? "—"}</td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
@@ -286,7 +287,7 @@ function Page() {
                         <div className="font-mono">{r.reference_transaction ?? "—"}</div>
                       </div>
                       <div className="text-lg font-bold tabular-nums">
-                        {(r.montant_total ?? 0).toLocaleString("fr-FR")} F
+                        {formatCFA(r.montant_total)}
                       </div>
                     </div>
                   </div>
