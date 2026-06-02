@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { FileCheck, Search, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/prestations")({ component: PrestationsPage });
 
@@ -40,8 +41,6 @@ type Validation = {
   id: string; niveau: number; action: string; motif: string | null;
   validated_at: string; role_requis: string; validateur_id: string;
 };
-
-function fmt(n: number | null | undefined) { return `${(n ?? 0).toLocaleString("fr-FR")} F`; }
 
 function PrestationsPage() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -172,7 +171,7 @@ function PrestationsPage() {
                       {r.members?.matricule && <div className="font-mono text-xs text-muted-foreground">{r.members.matricule}</div>}
                     </TableCell>
                     <TableCell className="capitalize">{r.type_evenement.replace(/_/g," ")}</TableCell>
-                    <TableCell className="text-right font-mono">{fmt(r.montant_applicable)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCFA(r.montant_applicable)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-mono text-xs">{STEP_LABELS[Math.max(0, r.step_validation - 1)]}</Badge>
                     </TableCell>
@@ -214,7 +213,7 @@ function PrestationsPage() {
           {current && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Montant applicable :</span> <span className="font-mono font-semibold">{fmt(current.montant_applicable)}</span></div>
+                <div><span className="text-muted-foreground">Montant applicable :</span> <span className="font-mono font-semibold">{formatCFA(current.montant_applicable)}</span></div>
                 <div><span className="text-muted-foreground">Étape actuelle :</span> <Badge variant="outline">{STEP_LABELS[Math.max(0, current.step_validation - 1)]}</Badge></div>
                 <div><span className="text-muted-foreground">Statut global :</span> {current.statut_global}</div>
                 <div><span className="text-muted-foreground">Soumise le :</span> {new Date(current.submitted_at).toLocaleString("fr-FR")}</div>
