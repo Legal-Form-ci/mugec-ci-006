@@ -79,6 +79,7 @@ function ActualitesPage() {
     setGenerating(true);
     setDiagnostic(null);
     try {
+      toast.message("Génération du texte IA…");
       const article = await genArticle({ data: { topic: topic.trim(), kind: "actualite" } });
       let cover = "";
       let illus: string[] = [];
