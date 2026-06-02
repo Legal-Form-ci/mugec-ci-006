@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, MapPin, CalendarClock } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/opportunites/$slug")({
   component: OpportunitePage,
@@ -102,7 +103,7 @@ function OpportunitePage() {
         )}
         <div
           className="prose prose-neutral dark:prose-invert mt-8 max-w-none prose-headings:font-semibold prose-img:rounded-lg"
-          dangerouslySetInnerHTML={{ __html: item.body || item.description || "" }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.body || item.description || "") }}
         />
         {illus.length > 0 && (
           <div className="mt-8 grid gap-4 sm:grid-cols-2">

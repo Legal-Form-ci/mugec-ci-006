@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Loader2, CheckCircle2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useServerFn } from "@tanstack/react-start";
+import { submitContactMessage } from "@/lib/secure-actions.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/contact")({
@@ -26,6 +27,7 @@ function Page() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const submitMessage = useServerFn(submitContactMessage);
 
   function update<K extends keyof typeof form>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -39,16 +41,15 @@ function Page() {
     if (form.message.trim().length < 5) { setErr("Votre message est trop court."); return; }
     setBusy(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("contact_messages").insert({
-        nom: form.nom.trim(),
-        email: form.email.trim(),
-        telephone: form.telephone.trim() || null,
-        sujet: form.sujet.trim() || null,
-        message: form.message.trim(),
-        user_id: user?.id ?? null,
+      await submitMessage({
+        data: {
+          nom: form.nom.trim(),
+          email: form.email.trim(),
+          telephone: form.telephone.trim() || undefined,
+          sujet: form.sujet.trim() || undefined,
+          message: form.message.trim(),
+        },
       });
-      if (error) throw error;
       setSent(true);
       toast.success("Message envoyé avec succès");
       setForm({ nom: "", email: "", telephone: "", sujet: "", message: "" });

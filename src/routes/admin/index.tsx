@@ -124,9 +124,15 @@ function AdminDashboard() {
   }, [page, user?.id, authLoading]);
 
   async function setStatus(id: string, statut: string) {
-    const { error } = await supabase.from("members").update({ statut }).eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success(`Statut → ${statut}`); loadMembers(); loadStats(); }
+    try {
+      const { setMemberStatusSecure } = await import("@/lib/secure-actions.functions");
+      await setMemberStatusSecure({ data: { id, statut: statut as any } });
+      toast.success(`Statut → ${statut}`);
+      loadMembers();
+      loadStats();
+    } catch (error: any) {
+      toast.error(error?.message ?? "Échec de la mise à jour");
+    }
   }
 
   async function openEdit(m: MemberRow) {
