@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Loader2, CheckCircle2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useServerFn } from "@tanstack/react-start";
+import { submitContactMessage } from "@/lib/secure-actions.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/contact")({
@@ -25,7 +26,7 @@ function Page() {
   const [form, setForm] = useState({ nom: "", email: "", telephone: "", sujet: "", message: "" });
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const submitMessage = useServerFn(submitContactMessage);
 
   function update<K extends keyof typeof form>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
