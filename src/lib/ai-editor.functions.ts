@@ -21,7 +21,7 @@ async function assertAdmin(userId: string) {
     .select("role")
     .eq("user_id", userId);
   if (error) throw new Error(`Diagnostic rôle admin: ${error.message}`);
-  const ok = (data ?? []).some((r) => ADMIN_ROLES.has(String(r.role)));
+  const ok = (data ?? []).some((r: { role: string }) => ADMIN_ROLES.has(String(r.role)));
   if (!ok) throw new Error("Accès refusé");
 }
 
@@ -182,6 +182,7 @@ export const upsertNews = createServerFn({ method: "POST" })
   .inputValidator((input) => newsSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -230,6 +231,7 @@ export const upsertOpportunite = createServerFn({ method: "POST" })
   .inputValidator((input) => oppSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -267,6 +269,7 @@ export const deleteContent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const { error } = await db.from(data.kind).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
