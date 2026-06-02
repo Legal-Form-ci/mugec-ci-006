@@ -9,7 +9,7 @@ export const Route = createFileRoute("/faq")({
 
 const faq = [
   { q: "Qui peut s’inscrire à la MUGEC-CI ?", a: "Tout agent en activité ou à la retraite d'une collectivité territoriale ivoirienne (mairie, conseil régional, etc.)." },
-  { q: "Combien coûte l’inscription ?", a: "Les frais d’inscription sont de 5 000 FCFA, payables une seule fois par mobile money." },
+  { q: "Combien coûte l’inscription ?", a: "Les frais d’inscription sont de 5 000 F, payables une seule fois par mobile money." },
   { q: "Comment payer mes cotisations ?", a: "Via Orange Money, MTN MoMo, Wave ou Moov, directement depuis votre espace membre." },
   { q: "Comment obtenir ma carte de membre ?", a: "Après validation de votre dossier, votre carte est générée automatiquement et téléchargeable au format PDF." },
   { q: "Mes données sont-elles protégées ?", a: "Oui. La plateforme respecte les bonnes pratiques de sécurité (HTTPS, RGPD-like, accès cloisonné par rôle)." },
