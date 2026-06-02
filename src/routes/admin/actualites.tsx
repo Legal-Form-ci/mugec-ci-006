@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { RichEditor } from "@/components/RichEditor";
 import { generateArticle, generateArticleImages, upsertNews, deleteContent } from "@/lib/ai-editor.functions";
-import { Sparkles, Plus, Edit, Trash2, Wand2, Eye, Image as ImageIcon, Loader2 } from "lucide-react";
+import { AlertCircle, Sparkles, Plus, Edit, Trash2, Wand2, Eye, Image as ImageIcon, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/actualites")({ component: ActualitesPage });
 
@@ -43,6 +44,7 @@ function ActualitesPage() {
   const [saving, setSaving] = useState(false);
   const [topic, setTopic] = useState("");
   const [imageMode, setImageMode] = useState<"none"|"cover"|"both">("cover");
+  const [diagnostic, setDiagnostic] = useState<string | null>(null);
 
   const genArticle = useServerFn(generateArticle);
   const genImages = useServerFn(generateArticleImages);
@@ -75,18 +77,11 @@ function ActualitesPage() {
   async function handleGenerate() {
     if (!topic.trim()) { toast.error("Donnez un sujet"); return; }
     setGenerating(true);
+    setDiagnostic(null);
     try {
       const article = await genArticle({ data: { topic: topic.trim(), kind: "actualite" } });
       let cover = "";
       let illus: string[] = [];
-      if (imageMode !== "none") {
-        const coverRes = await genImages({ data: { prompt: article.image_prompt, mode: "cover", count: 1, folder: "actualites" } });
-        cover = coverRes.urls[0] || "";
-        if (imageMode === "both") {
-          const illusRes = await genImages({ data: { prompt: article.image_prompt, mode: "illustrations", count: 2, folder: "actualites" } });
-          illus = illusRes.urls;
-        }
-      }
       const draft: Article = {
         ...EMPTY,
         title: article.title,
@@ -101,16 +96,34 @@ function ActualitesPage() {
         meta_description: article.meta_description,
         published: false,
       };
-      // Auto-save le brouillon pour qu'il apparaisse immédiatement dans la liste admin.
       const saved = await save({ data: { ...(draft as any), id: undefined } });
-      setCurrent({ ...draft, id: saved?.id ?? "" });
+      toast.message("Brouillon IA enregistré. Publication en cours…");
+      if (imageMode !== "none") {
+        try {
+          const coverRes = await genImages({ data: { prompt: article.image_prompt, mode: "cover", count: 1, folder: "actualites" } });
+          cover = coverRes.urls[0] || "";
+          if (imageMode === "both") {
+            const illusRes = await genImages({ data: { prompt: article.image_prompt, mode: "illustrations", count: 2, folder: "actualites" } });
+            illus = illusRes.urls;
+          }
+        } catch (imageError: any) {
+          const detail = imageError?.message ?? "Image non générée";
+          setDiagnostic(`Actualité publiée sans image. Diagnostic image IA : ${detail}`);
+          toast.warning("Image non générée, publication du texte maintenue.");
+        }
+      }
+      const published = { ...draft, id: saved?.id ?? "", cover_url: cover, illustrations: illus, published: true };
+      await save({ data: published as any });
+      setCurrent(published);
       setGenOpen(false);
       setEditorOpen(true);
       setTopic("");
       await load();
-      toast.success("Brouillon généré et enregistré — relisez puis activez la publication.");
+      toast.success("Actualité IA enregistrée, publiée et visible sur le site public.");
     } catch (e: any) {
-      toast.error(e?.message ?? "Erreur de génération");
+      const detail = e?.message ?? "Erreur de génération ou d'enregistrement";
+      setDiagnostic(`Échec génération/enregistrement actualité : ${detail}`);
+      toast.error("Échec génération/enregistrement", { description: detail });
     } finally {
       setGenerating(false);
     }
@@ -129,10 +142,13 @@ function ActualitesPage() {
       delete payload.created_at;
       await save({ data: payload });
       toast.success("Article enregistré");
+      setDiagnostic(null);
       setEditorOpen(false);
       load();
     } catch (e: any) {
-      toast.error(e?.message ?? "Erreur enregistrement");
+      const detail = e?.message ?? "Erreur enregistrement";
+      setDiagnostic(`Échec upsertNews : ${detail}`);
+      toast.error("Échec upsertNews", { description: detail });
     } finally {
       setSaving(false);
     }
@@ -151,6 +167,13 @@ function ActualitesPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/40">
       <DashboardHeader title="Actualités MUGEC-CI" nav={ADMIN_NAV} />
       <main className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
+        {diagnostic && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Diagnostic Actualités</AlertTitle>
+            <AlertDescription>{diagnostic}</AlertDescription>
+          </Alert>
+        )}
         <Card className="border-0 shadow-md">
           <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
