@@ -74,11 +74,15 @@ function MembresPage() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [page, statut]);
 
   async function setStatus(id: string, s: string) {
-    const { error } = await supabase.from("members").update({ statut: s }).eq("id", id);
-    if (error) {
+    try {
+      const { setMemberStatusSecure } = await import("@/lib/secure-actions.functions");
+      await setMemberStatusSecure({ data: { id, statut: s as any } });
+      toast.success(`Statut → ${s}`);
+      load();
+    } catch (error: any) {
       console.error("admin members setStatus failed", error);
       toast.error("Impossible de mettre à jour le statut.");
-    } else { toast.success(`Statut → ${s}`); load(); }
+    }
   }
 
   return (

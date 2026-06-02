@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/actualites/$slug")({
   component: ArticlePage,

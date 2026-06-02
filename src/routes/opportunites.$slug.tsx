@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, MapPin, CalendarClock } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 
 export const Route = createFileRoute("/opportunites/$slug")({
   component: OpportunitePage,
