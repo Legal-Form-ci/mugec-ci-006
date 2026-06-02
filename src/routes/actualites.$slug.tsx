@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify";
+import { getPublicContentBySlug } from "@/lib/public-content.functions";
 
 export const Route = createFileRoute("/actualites/$slug")({
   component: ArticlePage,
@@ -37,23 +38,19 @@ function ArticlePage() {
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const getContent = useServerFn(getPublicContentBySlug);
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { data } = await (supabase as any)
-        .from("news")
-        .select("*")
-        .eq("slug", slug)
-        .eq("published", true)
-        .maybeSingle();
+      const data = await getContent({ data: { kind: "news", slug } });
       if (!alive) return;
       if (!data) setNotFound(true);
       else setItem(data);
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [slug]);
+  }, [getContent, slug]);
 
   if (loading) {
     return (
