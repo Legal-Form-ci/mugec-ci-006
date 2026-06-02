@@ -12,10 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { RichEditor } from "@/components/RichEditor";
-import { generateArticle, generateArticleImages, upsertNews, deleteContent } from "@/lib/ai-editor.functions";
+import { generateArticle, generateArticleImages, upsertNews, deleteContent, listAdminContent } from "@/lib/ai-editor.functions";
 import { AlertCircle, Sparkles, Plus, Edit, Trash2, Wand2, Eye, Image as ImageIcon, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/actualites")({ component: ActualitesPage });
@@ -50,16 +49,18 @@ function ActualitesPage() {
   const genImages = useServerFn(generateArticleImages);
   const save = useServerFn(upsertNews);
   const del = useServerFn(deleteContent);
+  const list = useServerFn(listAdminContent);
 
   async function load() {
     setLoading(true);
-    const { data, error } = await (supabase as any)
-      .from("news")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(200);
-    if (error) toast.error(error.message);
-    else setRows((data as Article[]) || []);
+    try {
+      const data = await list({ data: { kind: "news", limit: 200 } });
+      setRows((data as Article[]) || []);
+    } catch (e: any) {
+      const detail = e?.message ?? "Erreur de lecture des actualités";
+      setDiagnostic(`Échec lecture actualités admin : ${detail}`);
+      toast.error("Échec lecture actualités", { description: detail });
+    }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
