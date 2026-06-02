@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { FileCheck, Search, Wallet, CheckCircle2 } from "lucide-react";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/droits-adhesion")({ component: DroitsAdhesionPage });
 
@@ -21,7 +22,6 @@ type Row = {
 };
 
 const PAGE = 50;
-const fmt = (n: number) => `${(n ?? 0).toLocaleString("fr-FR")} F`;
 
 function DroitsAdhesionPage() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -70,9 +70,9 @@ function DroitsAdhesionPage() {
       <main className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div className="grid gap-4 md:grid-cols-4">
           <MiniStat icon={<FileCheck className="h-4 w-4"/>} label="Adhésions payées" value={String(stats.count)} accent="from-emerald-500 to-green-600"/>
-          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="Part MUGEC-CI (4 000 F)" value={fmt(stats.mut)} accent="from-blue-500 to-indigo-600"/>
-          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="Part MIPROJET (1 000 F)" value={fmt(stats.mip)} accent="from-purple-500 to-pink-600"/>
-          <MiniStat icon={<CheckCircle2 className="h-4 w-4"/>} label="Total perçu" value={fmt(stats.total)} accent="from-amber-500 to-orange-600"/>
+          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="Part MUGEC-CI (4 000 F)" value={formatCFA(stats.mut)} accent="from-blue-500 to-indigo-600"/>
+          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="Part MIPROJET (1 000 F)" value={formatCFA(stats.mip)} accent="from-purple-500 to-pink-600"/>
+          <MiniStat icon={<CheckCircle2 className="h-4 w-4"/>} label="Total perçu" value={formatCFA(stats.total)} accent="from-amber-500 to-orange-600"/>
         </div>
 
         <Card className="border-0 shadow-md">
@@ -121,9 +121,9 @@ function DroitsAdhesionPage() {
                       {r.members?.matricule && <div className="font-mono text-xs text-muted-foreground">{r.members.matricule}</div>}
                     </TableCell>
                     <TableCell className="font-mono text-xs">{r.reference_transaction ?? "—"}</TableCell>
-                    <TableCell className="text-right font-mono">{fmt(r.part_mutuelle)}</TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground">{fmt(r.part_miprojet)}</TableCell>
-                    <TableCell className="text-right font-mono font-semibold">{fmt(r.montant_total)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCFA(r.part_mutuelle)}</TableCell>
+                    <TableCell className="text-right font-mono text-muted-foreground">{formatCFA(r.part_miprojet)}</TableCell>
+                    <TableCell className="text-right font-mono font-semibold">{formatCFA(r.montant_total)}</TableCell>
                     <TableCell>
                       {r.statut_paiement === "paye"
                         ? <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">Payé</Badge>
