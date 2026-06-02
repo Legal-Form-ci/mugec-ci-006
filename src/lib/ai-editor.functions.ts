@@ -1,12 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-// Les nouvelles colonnes (slug, summary, illustrations, …) n'existent pas
-// encore dans le types.ts généré : on utilise un proxy non typé pour ces
-// écritures avant régénération.
-const db: any = supabaseAdmin;
+async function getDb() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
 
 const ADMIN_ROLES = new Set([
   "super_admin", "admin_national", "admin_regional", "admin_local", "agent_saisie",
@@ -16,10 +15,12 @@ const ADMIN_ROLES = new Set([
 ]);
 
 async function assertAdmin(userId: string) {
-  const { data } = await supabaseAdmin
+  const db = await getDb();
+  const { data, error } = await db
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
+  if (error) throw new Error(`Diagnostic rôle admin: ${error.message}`);
   const ok = (data ?? []).some((r) => ADMIN_ROLES.has(String(r.role)));
   if (!ok) throw new Error("Accès refusé");
 }
@@ -122,16 +123,17 @@ async function generateImageDataUrl(prompt: string): Promise<string> {
 }
 
 async function uploadDataUrl(dataUrl: string, folder: string): Promise<string> {
+  const db = await getDb();
   const m = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!m) throw new Error("Image invalide");
   const ext = m[1].split("/")[1] || "png";
   const buf = Buffer.from(m[2], "base64");
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabaseAdmin.storage.from("content").upload(path, buf, {
+  const { error } = await db.storage.from("content").upload(path, buf, {
     contentType: m[1], upsert: false,
   });
   if (error) throw new Error(error.message);
-  const { data } = supabaseAdmin.storage.from("content").getPublicUrl(path);
+  const { data } = db.storage.from("content").getPublicUrl(path);
   return data.publicUrl;
 }
 
