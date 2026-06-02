@@ -12,10 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { RichEditor } from "@/components/RichEditor";
-import { generateArticle, generateArticleImages, upsertOpportunite, deleteContent } from "@/lib/ai-editor.functions";
+import { generateArticle, generateArticleImages, upsertOpportunite, deleteContent, listAdminContent } from "@/lib/ai-editor.functions";
 import { AlertCircle, Sparkles, Plus, Edit, Trash2, Wand2, Eye, Image as ImageIcon, Loader2, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/admin/opportunites")({ component: OpportunitesAdmin });
@@ -51,14 +50,18 @@ function OpportunitesAdmin() {
   const genImages = useServerFn(generateArticleImages);
   const save = useServerFn(upsertOpportunite);
   const del = useServerFn(deleteContent);
+  const list = useServerFn(listAdminContent);
 
   async function load() {
     setLoading(true);
-    const { data, error } = await (supabase as any)
-      .from("opportunites").select("*")
-      .order("created_at", { ascending: false }).limit(200);
-    if (error) toast.error(error.message);
-    else setRows((data as Opp[]) || []);
+    try {
+      const data = await list({ data: { kind: "opportunites", limit: 200 } });
+      setRows((data as Opp[]) || []);
+    } catch (e: any) {
+      const detail = e?.message ?? "Erreur de lecture des opportunités";
+      setDiagnostic(`Échec lecture opportunités admin : ${detail}`);
+      toast.error("Échec lecture opportunités", { description: detail });
+    }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
