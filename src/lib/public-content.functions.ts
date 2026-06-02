@@ -6,8 +6,8 @@ async function getDb() {
   return supabaseAdmin as any;
 }
 
-const contentColumns =
-  "id, title, slug, summary, body, description, cover_url, illustrations, category, tags, type, lieu, date_limite, meta_title, meta_description, created_at";
+const newsColumns = "id, title, slug, summary, body, cover_url, illustrations, category, tags, meta_title, meta_description, created_at";
+const opportuniteColumns = "id, title, slug, summary, description, body, cover_url, illustrations, category, tags, type, lieu, date_limite, meta_title, meta_description, created_at";
 
 export const listPublicContent = createServerFn({ method: "GET" })
   .inputValidator((input) =>
@@ -15,9 +15,10 @@ export const listPublicContent = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const db = await getDb();
+    const columns = data.kind === "news" ? newsColumns : opportuniteColumns;
     const { data: rows, error } = await db
       .from(data.kind)
-      .select(contentColumns)
+      .select(columns)
       .eq("published", true)
       .order("created_at", { ascending: false })
       .limit(data.limit);
@@ -31,9 +32,10 @@ export const getPublicContentBySlug = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const db = await getDb();
+    const columns = data.kind === "news" ? newsColumns : opportuniteColumns;
     const { data: rows, error } = await db
       .from(data.kind)
-      .select(contentColumns)
+      .select(columns)
       .eq("slug", data.slug)
       .eq("published", true)
       .order("created_at", { ascending: false })
