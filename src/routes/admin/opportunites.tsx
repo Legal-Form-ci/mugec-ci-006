@@ -68,6 +68,7 @@ function OpportunitesAdmin() {
     setGenerating(true);
     setDiagnostic(null);
     try {
+      toast.message("Génération du texte IA…");
       const article = await genArticle({ data: { topic: topic.trim(), kind: "opportunite" } });
       let cover = ""; let illus: string[] = [];
       const draft: Opp = {
