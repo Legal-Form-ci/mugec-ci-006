@@ -162,6 +162,21 @@ export const generateArticleImages = createServerFn({ method: "POST" })
     return { urls };
   });
 
+export const listAdminContent = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ kind: z.enum(["news", "opportunites"]), limit: z.number().int().min(1).max(300).default(200) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const db = await getDb();
+    const { data: rows, error } = await db
+      .from(data.kind)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(`Diagnostic lecture ${data.kind}: ${error.message}`);
+    return rows ?? [];
+  });
+
 const newsSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(2).max(200),
