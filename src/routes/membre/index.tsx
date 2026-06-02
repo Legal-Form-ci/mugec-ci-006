@@ -262,7 +262,7 @@ function Page() {
                   <YAxis
                     stroke="var(--color-muted-foreground)"
                     fontSize={11}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={(v) => formatCFA(v)}
                   />
                   <Tooltip
                     contentStyle={{
