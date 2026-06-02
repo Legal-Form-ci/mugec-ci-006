@@ -280,7 +280,7 @@ function Page() {
       <section className="container mx-auto max-w-3xl px-4 py-12">
         <h1 className="text-3xl font-bold tracking-tight">Formulaire d'inscription</h1>
         <p className="mt-2 text-muted-foreground">
-          Étape {step} sur 4 — vos informations sont sauvegardées automatiquement. Frais d'inscription : <strong>5 000 FCFA</strong>.
+          Étape {step} sur 4 — vos informations sont sauvegardées automatiquement. Frais d'inscription : <strong>5 000 F</strong>.
         </p>
 
         <div className="mt-6">
@@ -447,7 +447,7 @@ function Page() {
             {step === 3 && (
               <div className="space-y-6">
                 <div>
-                  <Label>Choisissez votre moyen de paiement (5 000 FCFA)</Label>
+                  <Label>Choisissez votre moyen de paiement (5 000 F)</Label>
                   <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
                     {[
                       { id: "orange", name: "Orange Money" },
@@ -469,7 +469,7 @@ function Page() {
                 </div>
                 <div className="rounded-md bg-secondary/60 p-4 text-sm text-muted-foreground">
                   En cliquant sur <strong>Payer & confirmer</strong>, vous acceptez les statuts de la MUGEC-CI
-                  et autorisez le débit de 5 000 FCFA sur le numéro renseigné.
+                  et autorisez le débit de 5 000 F sur le numéro renseigné.
                 </div>
               </div>
             )}
@@ -486,7 +486,7 @@ function Page() {
                   <Summary k="Nom complet" v={`${data.prenoms ?? ""} ${data.nom ?? ""}`.trim()} />
                   <Summary k="Téléphone" v={data.telephone ?? "—"} />
                   <Summary k="Collectivité" v={data.collectivite ?? "—"} />
-                  <Summary k="Paiement" v={`${data.paiement ?? "orange"} — 5 000 FCFA`} />
+                  <Summary k="Paiement" v={`${data.paiement ?? "orange"} — 5 000 F`} />
                 </dl>
 
                 <div className="rounded-md border bg-secondary/40 p-4 space-y-3 text-sm">

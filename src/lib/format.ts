@@ -1,8 +1,12 @@
-/** Formats a FCFA amount with smart units. */
-export function formatCFA(n: number | null | undefined): string {
+/** Formats a FCFA amount with full separators and a stable “F” suffix. */
+export function formatCFA(n: number | string | null | undefined): string {
   const v = Number(n ?? 0);
-  if (!Number.isFinite(v) || v === 0) return "0 F";
-  if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(v % 1_000_000 === 0 ? 0 : 1)} M F`;
-  if (Math.abs(v) >= 10_000) return `${Math.round(v / 1000)} k F`;
-  return `${v.toLocaleString("fr-FR")} F`;
+  if (!Number.isFinite(v)) return "0 F";
+  return `${Math.round(v).toLocaleString("fr-FR")} F`;
+}
+
+export function formatNumber(n: number | string | null | undefined): string {
+  const v = Number(n ?? 0);
+  if (!Number.isFinite(v)) return "0";
+  return Math.round(v).toLocaleString("fr-FR");
 }

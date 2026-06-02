@@ -14,6 +14,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { dispatchNotification } from "@/lib/notifications.functions";
 import { Wallet, Search, Send, MessageSquare, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { TableRowsSkeleton } from "@/components/ui/skeletons";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/cotisations")({ component: CotisationsPage });
 
@@ -26,8 +27,6 @@ type Row = {
 };
 
 const PAGE = 50;
-
-function fmt(n: number) { return `${(n ?? 0).toLocaleString("fr-FR")} F`; }
 
 function CotisationsPage() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -127,8 +126,8 @@ function CotisationsPage() {
       <DashboardHeader title="Cotisations MUGEC-CI" nav={ADMIN_NAV} />
       <main className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div className="grid gap-4 md:grid-cols-4">
-          <MiniStat icon={<CheckCircle2 className="h-4 w-4"/>} label="Payées (vue)" value={fmt(stats.paye)} accent="from-emerald-500 to-green-600"/>
-          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="En attente" value={fmt(stats.attente)} accent="from-amber-500 to-orange-600"/>
+          <MiniStat icon={<CheckCircle2 className="h-4 w-4"/>} label="Payées (vue)" value={formatCFA(stats.paye)} accent="from-emerald-500 to-green-600"/>
+          <MiniStat icon={<Wallet className="h-4 w-4"/>} label="En attente" value={formatCFA(stats.attente)} accent="from-amber-500 to-orange-600"/>
           <MiniStat icon={<AlertTriangle className="h-4 w-4"/>} label="En retard (>30j)" value={String(stats.retard)} accent="from-rose-500 to-red-600"/>
           <MiniStat icon={<Send className="h-4 w-4"/>} label="Lignes affichées" value={String(stats.total)} accent="from-blue-500 to-indigo-600"/>
         </div>
@@ -190,7 +189,7 @@ function CotisationsPage() {
                           {r.members?.matricule && <div className="font-mono text-xs text-muted-foreground">{r.members.matricule}</div>}
                         </TableCell>
                         <TableCell>{r.periode ?? "—"}</TableCell>
-                        <TableCell className="text-right font-mono">{fmt(r.part_mutuelle)}</TableCell>
+                        <TableCell className="text-right font-mono">{formatCFA(r.part_mutuelle)}</TableCell>
                         <TableCell>
                           {r.statut_paiement === "paye"
                             ? <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">Payée</Badge>

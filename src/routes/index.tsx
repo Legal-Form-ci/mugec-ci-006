@@ -121,7 +121,7 @@ function Index() {
         <div className="rounded-2xl bg-gradient-to-br from-primary to-accent p-10 text-center text-white md:p-16">
           <h2 className="text-3xl font-bold md:text-4xl">Inscrivez-vous dès maintenant à la MUGEC-CI</h2>
           <p className="mx-auto mt-3 max-w-2xl text-white/90">
-            Frais d'inscription uniques de 5 000 FCFA, payables par mobile money. Inscription en
+            Frais d'inscription uniques de 5 000 F, payables par mobile money. Inscription en
             moins de 5 minutes, sans déplacement.
           </p>
           <Button asChild size="lg" variant="secondary" className="mt-6">

@@ -30,6 +30,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/membre/")({ component: Page });
 
@@ -205,7 +206,7 @@ function Page() {
         <KpiCard
           icon={Wallet}
           label="Total cotisé"
-          value={`${stats.total.toLocaleString("fr-FR")} F`}
+          value={formatCFA(stats.total)}
           hint={`${stats.paidCount} paiement${stats.paidCount > 1 ? "s" : ""}`}
           tone="primary"
         />
@@ -261,7 +262,7 @@ function Page() {
                   <YAxis
                     stroke="var(--color-muted-foreground)"
                     fontSize={11}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={(v) => formatCFA(v)}
                   />
                   <Tooltip
                     contentStyle={{
@@ -270,7 +271,7 @@ function Page() {
                       borderRadius: 8,
                       fontSize: 12,
                     }}
-                    formatter={(v: number) => [`${v.toLocaleString("fr-FR")} F`, "Montant"]}
+                    formatter={(v: number) => [formatCFA(v), "Montant"]}
                   />
                   <Area
                     type="monotone"
@@ -362,7 +363,7 @@ function Page() {
               </div>
               <div className="text-right">
                 <div className="text-sm font-semibold tabular-nums">
-                  {(s.montant_total ?? 0).toLocaleString("fr-FR")} F
+                  {formatCFA(s.montant_total)}
                 </div>
                 <Badge
                   variant={s.statut_paiement === "paye" ? "default" : "secondary"}

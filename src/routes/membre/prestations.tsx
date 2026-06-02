@@ -23,6 +23,7 @@ import {
   AlertCircle,
   Lock,
 } from "lucide-react";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/membre/prestations")({ component: PrestationsMembrePage });
 
@@ -65,10 +66,6 @@ function retraiteAmount(yearsSinceJoined: number): number {
   if (yearsSinceJoined <= 20) return 300_000;
   if (yearsSinceJoined <= 25) return 400_000;
   return 500_000;
-}
-
-function fmtFCFA(n: number) {
-  return `${n.toLocaleString("fr-FR")} FCFA`;
 }
 
 const STEP_LABELS = [
@@ -263,7 +260,7 @@ function PrestationsMembrePage() {
             {evType && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">Montant estimé (Art. 71)</div>
-                <div className="text-2xl font-bold text-primary font-mono">{fmtFCFA(estimatedAmount)}</div>
+                <div className="text-2xl font-bold text-primary font-mono">{formatCFA(estimatedAmount)}</div>
                 {evType === "retraite" && (
                   <div className="mt-1 text-xs text-muted-foreground">
                     Calculé selon votre ancienneté MUGEC-CI ({Math.floor(yearsJoined)} an{Math.floor(yearsJoined) > 1 ? "s" : ""})
@@ -346,7 +343,7 @@ function RequestCard({ r }: { r: Request }) {
         </div>
         <div className="text-right">
           {StatusBadge}
-          <div className="mt-1 font-mono text-sm font-semibold text-primary">{fmtFCFA(r.montant_applicable)}</div>
+          <div className="mt-1 font-mono text-sm font-semibold text-primary">{formatCFA(r.montant_applicable)}</div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">

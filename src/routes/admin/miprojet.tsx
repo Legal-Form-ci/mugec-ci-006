@@ -54,6 +54,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { formatCFA } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/miprojet")({ component: MiProjetDashboard });
 
@@ -85,7 +86,7 @@ const COLORS = {
 };
 
 function fmtFCFA(n: number | undefined | null) {
-  return `${(n ?? 0).toLocaleString("fr-FR")} F`;
+  return formatCFA(n);
 }
 
 export function MiProjetDashboard() {
@@ -328,7 +329,7 @@ export function MiProjetDashboard() {
                     <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
-                      tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={(v) => fmtFCFA(v)}
                     />
                     <Tooltip
                       formatter={(v: number) => fmtFCFA(v)}

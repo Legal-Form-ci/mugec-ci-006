@@ -1,12 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-// Les nouvelles colonnes (slug, summary, illustrations, …) n'existent pas
-// encore dans le types.ts généré : on utilise un proxy non typé pour ces
-// écritures avant régénération.
-const db: any = supabaseAdmin;
+async function getDb() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
 
 const ADMIN_ROLES = new Set([
   "super_admin", "admin_national", "admin_regional", "admin_local", "agent_saisie",
@@ -16,11 +15,13 @@ const ADMIN_ROLES = new Set([
 ]);
 
 async function assertAdmin(userId: string) {
-  const { data } = await supabaseAdmin
+  const db = await getDb();
+  const { data, error } = await db
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
-  const ok = (data ?? []).some((r) => ADMIN_ROLES.has(String(r.role)));
+  if (error) throw new Error(`Diagnostic rôle admin: ${error.message}`);
+  const ok = (data ?? []).some((r: { role: string }) => ADMIN_ROLES.has(String(r.role)));
   if (!ok) throw new Error("Accès refusé");
 }
 
@@ -122,16 +123,17 @@ async function generateImageDataUrl(prompt: string): Promise<string> {
 }
 
 async function uploadDataUrl(dataUrl: string, folder: string): Promise<string> {
+  const db = await getDb();
   const m = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!m) throw new Error("Image invalide");
   const ext = m[1].split("/")[1] || "png";
   const buf = Buffer.from(m[2], "base64");
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabaseAdmin.storage.from("content").upload(path, buf, {
+  const { error } = await db.storage.from("content").upload(path, buf, {
     contentType: m[1], upsert: false,
   });
   if (error) throw new Error(error.message);
-  const { data } = supabaseAdmin.storage.from("content").getPublicUrl(path);
+  const { data } = db.storage.from("content").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -160,6 +162,21 @@ export const generateArticleImages = createServerFn({ method: "POST" })
     return { urls };
   });
 
+export const listAdminContent = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ kind: z.enum(["news", "opportunites"]), limit: z.number().int().min(1).max(300).default(200) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const db = await getDb();
+    const { data: rows, error } = await db
+      .from(data.kind)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(`Diagnostic lecture ${data.kind}: ${error.message}`);
+    return rows ?? [];
+  });
+
 const newsSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(2).max(200),
@@ -180,6 +197,7 @@ export const upsertNews = createServerFn({ method: "POST" })
   .inputValidator((input) => newsSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -228,6 +246,7 @@ export const upsertOpportunite = createServerFn({ method: "POST" })
   .inputValidator((input) => oppSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -265,6 +284,7 @@ export const deleteContent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    const db = await getDb();
     const { error } = await db.from(data.kind).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
