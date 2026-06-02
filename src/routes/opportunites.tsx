@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { listPublicContent } from "@/lib/public-content.functions";
 
 export const Route = createFileRoute("/opportunites")({
   component: Page,
@@ -13,11 +14,14 @@ export const Route = createFileRoute("/opportunites")({
 function Page() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const listContent = useServerFn(listPublicContent);
   useEffect(() => {
-    (supabase as any).from("opportunites").select("id, title, slug, summary, description, type, lieu, date_limite, cover_url")
-      .eq("published", true).order("created_at", { ascending: false }).limit(50)
-      .then(({ data }: any) => { setItems(data ?? []); setLoading(false); });
-  }, []);
+    let alive = true;
+    listContent({ data: { kind: "opportunites", limit: 50 } })
+      .then((data) => { if (alive) setItems(data ?? []); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [listContent]);
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
