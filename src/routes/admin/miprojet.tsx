@@ -329,7 +329,7 @@ export function MiProjetDashboard() {
                     <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
-                      tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={(v) => fmtFCFA(v)}
                     />
                     <Tooltip
                       formatter={(v: number) => fmtFCFA(v)}
