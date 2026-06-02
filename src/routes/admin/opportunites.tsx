@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { RichEditor } from "@/components/RichEditor";
 import { generateArticle, generateArticleImages, upsertOpportunite, deleteContent } from "@/lib/ai-editor.functions";
-import { Sparkles, Plus, Edit, Trash2, Wand2, Image as ImageIcon, Loader2, Briefcase } from "lucide-react";
+import { AlertCircle, Sparkles, Plus, Edit, Trash2, Wand2, Eye, Image as ImageIcon, Loader2, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/admin/opportunites")({ component: OpportunitesAdmin });
 
@@ -44,6 +45,7 @@ function OpportunitesAdmin() {
   const [imageMode, setImageMode] = useState<"none"|"cover"|"both">("cover");
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [diagnostic, setDiagnostic] = useState<string | null>(null);
 
   const genArticle = useServerFn(generateArticle);
   const genImages = useServerFn(generateArticleImages);
@@ -64,17 +66,10 @@ function OpportunitesAdmin() {
   async function handleGenerate() {
     if (!topic.trim()) { toast.error("Donnez un sujet"); return; }
     setGenerating(true);
+    setDiagnostic(null);
     try {
       const article = await genArticle({ data: { topic: topic.trim(), kind: "opportunite" } });
       let cover = ""; let illus: string[] = [];
-      if (imageMode !== "none") {
-        const c = await genImages({ data: { prompt: article.image_prompt, mode: "cover", count: 1, folder: "opportunites" } });
-        cover = c.urls[0] || "";
-        if (imageMode === "both") {
-          const i = await genImages({ data: { prompt: article.image_prompt, mode: "illustrations", count: 2, folder: "opportunites" } });
-          illus = i.urls;
-        }
-      }
       const draft: Opp = {
         ...EMPTY,
         title: article.title, slug: article.slug, summary: article.summary,
@@ -84,11 +79,32 @@ function OpportunitesAdmin() {
         published: false,
       };
       const saved = await save({ data: { ...(draft as any), id: undefined } });
-      setCurrent({ ...draft, id: saved?.id ?? "" });
+      toast.message("Brouillon IA enregistré. Publication en cours…");
+      if (imageMode !== "none") {
+        try {
+          const c = await genImages({ data: { prompt: article.image_prompt, mode: "cover", count: 1, folder: "opportunites" } });
+          cover = c.urls[0] || "";
+          if (imageMode === "both") {
+            const i = await genImages({ data: { prompt: article.image_prompt, mode: "illustrations", count: 2, folder: "opportunites" } });
+            illus = i.urls;
+          }
+        } catch (imageError: any) {
+          const detail = imageError?.message ?? "Image non générée";
+          setDiagnostic(`Opportunité publiée sans image. Diagnostic image IA : ${detail}`);
+          toast.warning("Image non générée, publication du texte maintenue.");
+        }
+      }
+      const published = { ...draft, id: saved?.id ?? "", cover_url: cover, illustrations: illus, published: true };
+      await save({ data: published as any });
+      setCurrent(published);
       setGenOpen(false); setEditorOpen(true); setTopic("");
       await load();
-      toast.success("Brouillon généré et enregistré — relisez puis activez la publication.");
-    } catch (e: any) { toast.error(e?.message ?? "Erreur"); }
+      toast.success("Opportunité IA enregistrée, publiée et visible sur le site public.");
+    } catch (e: any) {
+      const detail = e?.message ?? "Erreur de génération ou d'enregistrement";
+      setDiagnostic(`Échec génération/enregistrement opportunité : ${detail}`);
+      toast.error("Échec upsertOpportunite", { description: detail });
+    }
     finally { setGenerating(false); }
   }
 
@@ -100,8 +116,13 @@ function OpportunitesAdmin() {
       delete payload.created_at;
       await save({ data: payload });
       toast.success("Opportunité enregistrée");
+      setDiagnostic(null);
       setEditorOpen(false); load();
-    } catch (e: any) { toast.error(e?.message ?? "Erreur"); }
+    } catch (e: any) {
+      const detail = e?.message ?? "Erreur enregistrement";
+      setDiagnostic(`Échec upsertOpportunite : ${detail}`);
+      toast.error("Échec upsertOpportunite", { description: detail });
+    }
     finally { setSaving(false); }
   }
 
@@ -115,6 +136,13 @@ function OpportunitesAdmin() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/40">
       <DashboardHeader title="Opportunités MUGEC-CI" nav={ADMIN_NAV} />
       <main className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
+        {diagnostic && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Diagnostic Opportunités</AlertTitle>
+            <AlertDescription>{diagnostic}</AlertDescription>
+          </Alert>
+        )}
         <Card className="border-0 shadow-md">
           <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -144,6 +172,7 @@ function OpportunitesAdmin() {
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{o.summary || o.description?.slice(0, 200)}</p>
                     </div>
                     <div className="flex gap-1">
+                      {o.slug && <Button asChild size="sm" variant="ghost"><a href={`/opportunites/${o.slug}`} target="_blank" rel="noreferrer"><Eye className="h-4 w-4"/></a></Button>}
                       <Button size="sm" variant="ghost" onClick={() => { setCurrent({ ...o, illustrations: o.illustrations ?? [], tags: o.tags ?? [] }); setEditorOpen(true); }}><Edit className="h-4 w-4"/></Button>
                       <Button size="sm" variant="ghost" onClick={() => handleDelete(o)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                     </div>
@@ -200,6 +229,7 @@ function OpportunitesAdmin() {
                 <Input value={current.type ?? ""} onChange={(e) => setCurrent({ ...current, type: e.target.value, category: e.target.value })} placeholder="Emploi, Formation, Marché public…" /></div>
               <div><Label>Lieu</Label><Input value={current.lieu ?? ""} onChange={(e) => setCurrent({ ...current, lieu: e.target.value })} /></div>
               <div><Label>Date limite</Label><Input type="date" value={current.date_limite ?? ""} onChange={(e) => setCurrent({ ...current, date_limite: e.target.value })} /></div>
+              <div><Label>Slug (URL)</Label><Input value={current.slug ?? ""} onChange={(e) => setCurrent({ ...current, slug: e.target.value })} /></div>
               <div><Label>Image de couverture (URL)</Label>
                 <Input value={current.cover_url ?? ""} onChange={(e) => setCurrent({ ...current, cover_url: e.target.value })} />
                 {current.cover_url && <img src={current.cover_url} alt="" className="mt-2 rounded border max-h-32 object-cover w-full"/>}</div>
