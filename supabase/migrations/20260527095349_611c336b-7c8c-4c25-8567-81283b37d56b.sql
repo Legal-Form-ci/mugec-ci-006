@@ -17,7 +17,7 @@ BEGIN
     ) VALUES (
       v_mugec_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'adminmgec@mugec-ci.local',
-      crypt('@Mugec-CI26', gen_salt('bf')),
+      crypt('__ROTATE_ME__', gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"login":"mugecadmin","display_name":"Admin MUGEC-CI"}'::jsonb,
@@ -29,7 +29,7 @@ BEGIN
             'email', 'adminmgec@mugec-ci.local', now(), now(), now());
   ELSE
     UPDATE auth.users
-       SET encrypted_password = crypt('@Mugec-CI26', gen_salt('bf')),
+       SET encrypted_password = crypt('__ROTATE_ME__', gen_salt('bf')),
            email_confirmed_at = COALESCE(email_confirmed_at, now()),
            updated_at = now(),
            raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || '{"login":"mugecadmin","display_name":"Admin MUGEC-CI"}'::jsonb
@@ -48,7 +48,7 @@ BEGIN
     ) VALUES (
       v_inoce_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'admininoce@miprojet.local',
-      crypt('@Massa29012020', gen_salt('bf')),
+      crypt('__ROTATE_ME__', gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"login":"admininoce","display_name":"Admin MIPROJET"}'::jsonb,
@@ -60,7 +60,7 @@ BEGIN
             'email', 'admininoce@miprojet.local', now(), now(), now());
   ELSE
     UPDATE auth.users
-       SET encrypted_password = crypt('@Massa29012020', gen_salt('bf')),
+       SET encrypted_password = crypt('__ROTATE_ME__', gen_salt('bf')),
            email_confirmed_at = COALESCE(email_confirmed_at, now()),
            updated_at = now(),
            raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || '{"login":"admininoce","display_name":"Admin MIPROJET"}'::jsonb
