@@ -2,11 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function getDb() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin as any;
-}
-
 const ADMIN_ROLES = new Set([
   "super_admin", "admin_national", "admin_regional", "admin_local", "agent_saisie",
   "president", "secretaire_general", "tresorier_national", "commissaire_comptes",
@@ -14,8 +9,7 @@ const ADMIN_ROLES = new Set([
   "tresorier_regional", "delegue_section",
 ]);
 
-async function assertAdmin(userId: string) {
-  const db = await getDb();
+async function assertAdmin(db: any, userId: string) {
   const { data, error } = await db
     .from("user_roles")
     .select("role")
@@ -57,7 +51,7 @@ export const generateArticle = createServerFn({ method: "POST" })
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const kindLabel = data.kind === "actualite" ? "actualité" : "opportunité";
     const system = `Tu es l'éditeur officiel de MUGEC-CI (Mutuelle Générale des Collectivités de Côte d'Ivoire). Rédige une ${kindLabel} professionnelle, claire, en français, ton institutionnel sobre, structurée en HTML (h2, h3, p, ul/li, blockquote, strong). Réponds STRICTEMENT en JSON valide.`;
     const user = `Sujet / brief : "${data.topic}"
@@ -114,7 +108,6 @@ async function generateImageDataUrl(prompt: string): Promise<string> {
     throw new Error(`Erreur image: ${res.status}`);
   }
   const data = await res.json();
-  // try multiple response shapes
   const b64 = data?.data?.[0]?.b64_json
     ?? data?.choices?.[0]?.message?.images?.[0]?.image_url?.url?.replace(/^data:image\/[^;]+;base64,/, "")
     ?? data?.choices?.[0]?.message?.content?.match?.(/data:image\/[^;]+;base64,([A-Za-z0-9+/=]+)/)?.[1];
@@ -122,8 +115,7 @@ async function generateImageDataUrl(prompt: string): Promise<string> {
   return `data:image/png;base64,${b64}`;
 }
 
-async function uploadDataUrl(dataUrl: string, folder: string): Promise<string> {
-  const db = await getDb();
+async function uploadDataUrl(db: any, dataUrl: string, folder: string): Promise<string> {
   const m = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!m) throw new Error("Image invalide");
   const ext = m[1].split("/")[1] || "png";
@@ -149,14 +141,14 @@ export const generateArticleImages = createServerFn({ method: "POST" })
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const n = data.mode === "cover" ? 1 : Math.min(3, data.count);
     const urls: string[] = [];
     for (let i = 0; i < n; i++) {
       const dataUrl = await generateImageDataUrl(
         n === 1 ? data.prompt : `${data.prompt} — vue ${i + 1}, angle différent`,
       );
-      const url = await uploadDataUrl(dataUrl, data.folder);
+      const url = await uploadDataUrl(context.supabase, dataUrl, data.folder);
       urls.push(url);
     }
     return { urls };
@@ -166,9 +158,8 @@ export const listAdminContent = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ kind: z.enum(["news", "opportunites"]), limit: z.number().int().min(1).max(300).default(200) }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const db = await getDb();
-    const { data: rows, error } = await db
+    await assertAdmin(context.supabase, context.userId);
+    const { data: rows, error } = await context.supabase
       .from(data.kind)
       .select("*")
       .order("created_at", { ascending: false })
@@ -196,8 +187,7 @@ export const upsertNews = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => newsSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const db = await getDb();
+    await assertAdmin(context.supabase, context.userId);
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -213,11 +203,11 @@ export const upsertNews = createServerFn({ method: "POST" })
       author_id: context.userId,
     };
     if (data.id) {
-      const { error } = await db.from("news").update(payload).eq("id", data.id);
+      const { error } = await context.supabase.from("news").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
     }
-    const { data: row, error } = await db.from("news").insert(payload).select("id").single();
+    const { data: row, error } = await context.supabase.from("news").insert(payload).select("id").single();
     if (error) throw new Error(error.message);
     return { ok: true, id: row.id };
   });
@@ -245,8 +235,7 @@ export const upsertOpportunite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => oppSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const db = await getDb();
+    await assertAdmin(context.supabase, context.userId);
     const payload: any = {
       title: data.title,
       slug: data.slug || slugify(data.title),
@@ -265,11 +254,11 @@ export const upsertOpportunite = createServerFn({ method: "POST" })
       published: data.published,
     };
     if (data.id) {
-      const { error } = await db.from("opportunites").update(payload).eq("id", data.id);
+      const { error } = await context.supabase.from("opportunites").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
     }
-    const { data: row, error } = await db.from("opportunites").insert(payload).select("id").single();
+    const { data: row, error } = await context.supabase.from("opportunites").insert(payload).select("id").single();
     if (error) throw new Error(error.message);
     return { ok: true, id: row.id };
   });
@@ -283,9 +272,8 @@ export const deleteContent = createServerFn({ method: "POST" })
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const db = await getDb();
-    const { error } = await db.from(data.kind).delete().eq("id", data.id);
+    await assertAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase.from(data.kind).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -295,12 +283,12 @@ export const uploadContentImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
-      dataUrl: z.string().min(20).max(28_000_000), // ~20MB base64
+      dataUrl: z.string().min(20).max(28_000_000),
       folder: z.enum(["actualites", "opportunites"]).default("actualites"),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const url = await uploadDataUrl(data.dataUrl, data.folder);
+    await assertAdmin(context.supabase, context.userId);
+    const url = await uploadDataUrl(context.supabase, data.dataUrl, data.folder);
     return { url };
   });
