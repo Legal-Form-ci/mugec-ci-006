@@ -56,6 +56,81 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_invitations: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          invited_by: string | null
+          portal: string
+          role: string
+          status: string
+          target_email: string
+          target_phone: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          portal: string
+          role: string
+          status?: string
+          target_email: string
+          target_phone?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          portal?: string
+          role?: string
+          status?: string
+          target_email?: string
+          target_phone?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_user_directory: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          portal: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          portal: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          portal?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           config_key: string
@@ -1620,6 +1695,8 @@ export type Database = {
         | "comite_controle"
         | "conseil_sages"
         | "delegue_section"
+        | "miprojet_admin"
+        | "miprojet_viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1765,6 +1842,8 @@ export const Constants = {
         "comite_controle",
         "conseil_sages",
         "delegue_section",
+        "miprojet_admin",
+        "miprojet_viewer",
       ],
     },
   },
